@@ -1,0 +1,163 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+    <link rel="stylesheet" href="{% static  'NetHubApp/styles.css' %}">
+    <link rel="icon" href="{% static 'NetHubApp/logo.jpg' %}">
+    <script src="{% static  'NetHubApp/jquery.js' %}"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="{% static  'NetHubApp/croppie.css' %}">
+    <script src="{% static  'NetHubApp/croppie.js' %}"></script>
+    <script src="{% static  'NetHubApp/exif.js' %}"></script>
+    <title> {% block title %} NETHUB {% endblock %}</title>
+    <script src="https://kit.fontawesome.com/d64329f4e5.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <!-- 
+        <i class="fi fi-rr-user"></i>
+        
+    -->
+    <section class='main'>
+        <div class="blur-main">
+
+        </div>
+        <div class='submain'>
+          
+            <div class='submain-1'>
+
+                
+                <div class='submain-1-container {% if not user.is_authenticated %} submain-1-container-not-auth{% endif %} '>
+                    <!--  -->
+
+                    <div class='submain-1-flex submain-1-logo'>
+                        <img src="{% static  'NetHubApp/logo.jpg' %}" alt="">
+                        <h3><a href="#">Nethub</a></h3>
+
+                    </div>
+
+                    {% if not user.is_authenticated %}
+                        <nav class="submain-1-flex submain-1-nav">
+                            {% block auth-option %}
+                                <a class='submain-1-auth-link' href="{% url 'login' %}"><i class="fi fi-rr-sign-in"></i> SIGN IN</a>
+                                <a class='submain-1-auth-link' href="{% url 'register' %}"><i class="fas fa-address-card"></i>CREATE AN ACCOUNT</a>
+
+
+                            {% endblock %}
+                        </nav>
+                    {% else %} 
+
+
+                        <nav class="submain-1-flex submain-1-nav">
+                            <a class='submain-1-nav-link active-link submain-1-nav-link-mobile' data-link='home'  href='#'> <i class="fas fa-home"></i></i>Home</a>
+                            <a class='submain-1-nav-link' data-link='profile' href='#'> <i class="fas fa-user"></i>Profile</a>
+                            <a class='submain-1-nav-link' data-link='following' href="#"><i class="fas fa-user-check"></i>Following </a>
+                            <a class='submain-1-nav-link' data-link='followers' href="#"><i class="fas fa-user-friends"></i>Followers</a> 
+                            <a class='submain-1-nav-link submain-1-nav-link-mobile' data-link='following_posts' href="#"><i class="fas fa-users"></i>Following Posts</a>
+                            <a class='submain-1-nav-link submain-1-nav-link-mobile' data-link='bookmarks' href="#"><i class="fi fi-sr-bookmark"></i> Bookmarks</a>
+                            <a class='submain-1-nav-link main-logout-link' href="#"><i class="fi fi-rr-sign-out-alt"></i> Logout</a>
+                        </nav>
+                        <div class="submain-1-flex submain-1-userinfo">
+                            <a href='#55'>
+                                <img id='submain-1-userpic' src=" {{user.profile_picture.url}} " alt="">
+                            </a>
+                            <a class="submain-1-username" href="#" data-username="{{user.username}}" data-userId="{{user.id}}"><h4>{{user.username|title}}</h4></a>
+                        
+                            
+                        </div>
+                    
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class='submain-2'>
+            
+                <header>
+                    <a href=" {% url 'index' 'home' %} "><img class ='logo-img' src="{% static  'NetHubApp/logo.jpg' %}" alt=""></a>
+                    {% if not user.is_authenticated %}<img class='hamburger-menu navigator-menu' src="{% static  'NetHubApp/hamburger.png' %}" alt=""> {% else %}<img class='image-nav-menu navigator-menu' src="{{user.profile_picture.url}}" alt="">{% endif %}
+                    {% block header %} <h3 class='header-title'> Home</h3> {% endblock %}
+                </header>
+                <div class='body-overlay'> 
+                
+                    {% block body %}
+
+                    {% endblock %}
+                
+                    
+                </div>
+                {% if user.is_authenticated %}
+                    <a href="#" class='new-post-mobile-btn'>
+                        <i class="fi fi-rr-plus"></i>
+                    </a>
+                {% endif %}
+            </div> 
+            <div class='submain-3 {% if not user.is_authenticated %} submain-3-not-auth {% endif %}'>
+                <!--  -->
+                {% if user.is_authenticated %}
+                    <div class="submain-3-search">
+                        <form action="" method="">
+                            <button type ='submit'><i class="fi fi-rr-search"></i></button>
+                            <input type="text" placeholder="Search NetHub">
+                        </form>
+                        
+
+                    </div>
+                {% else %}
+                    <h1>LET'S GET YOU STARTED</h1>
+
+                {% endif %}                 
+            </div>
+        </div>
+        <input id='csrf' type='text' value='{{csrf_token }}' hidden>
+        
+        {% if user.is_authenticated %}
+            <footer>
+                <a class='footer-active' data-footerLink='home' data-footerName= 'Home'  href=""><i class="fas fa-home"></i></a>
+                <a href="" data-footerLink ='following_posts' data-footerName='Following Posts'><i class="fas fa-users"></i></a>
+                <a href="" data-footerLink ='bookmarks' data-footerName='Bookmarks'><i class="fi fi-sr-bookmark"></i></a>
+                <a href="" data-footerLink ='search' data-footerName='Search'><i class="fas fa-search"></i></a>
+            </footer>
+        {% endif %}  
+    </section>
+    <section class='logout-popup'> 
+        <h4> Are you Sure You Want Log Out??</h4>
+        <form action="{% url 'logout' %}" method='post'>
+
+            {% csrf_token %}
+           
+            <span> No, take me back</span>
+
+            <button type='submit'>Yes, Log me out</button>
+        </form>
+    </section>
+    <section class='new-post-mobile-container'>
+        <div> <i class="mobile-back-post-btn fas fa-arrow-left"></i> <h1>New Post</div>
+        <form action="{% url 'create_post' %}" method='post'>
+
+            {% csrf_token %}
+            <div placeholder="What's going on buddy?"  class="textarea" contenteditable='true'></div>
+            <input type ='text' class='hidden-post' name='post_content' hidden>
+            <input type="submit" class='new-post-btn btn-inactive' value="Post" disabled>
+        
+        </form>
+    </section>
+    <section class='popup-dark'> </section>
+
+
+
+    <div class="profile-edit-container hide-edit-info">
+
+    </div>
+    <script src="{% static  'NetHubApp/index.js' %}"></script>
+
+    {% block script %} {% endblock %}
+</body>
+</html>

@@ -1,0 +1,219 @@
+{% extends 'NetHubApp/layout.html' %}
+{% load static %}
+
+
+{% block title %}
+    NETHUB | {{ page }}
+{% endblock %}
+
+{% block header %} <h3 class='header-title'> {{ page|title }}</h3>{% endblock %}
+
+{% block body %}
+    <div class="post-overlay {% if follow is not None or is_profile or custom_posts is not None %}hide-main-home{% endif %}" id="main-home-post-container">
+
+
+        {% if user.is_authenticated %}
+
+            <div class="new-post-container">
+                <form action="{% url 'create_post' %}" method='post'>
+                    {% csrf_token %}
+                    <div contenteditable="true" placeholder="What's going on buddy?" class="textarea"></div>
+                    <input type ='text' class='hidden-post' name='post_content' hidden>
+                    <input type="submit" class='new-post-btn btn-inactive' value="Post" disabled>
+                </form>
+                
+            </div>
+        {% endif %}
+
+        
+        {% for post in posts %}
+            <div class='post-container' data-postId="{{post.id}}"> 
+                <div class='post-image'>
+                    <img src="{{post.post_creator.profile_picture.url}} " alt="">
+                </div>
+                <div class='post-content'>
+                    <div class='post-title'>
+                        <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                    </div>
+                    <div data-postId='{{post.id}}' class='post-message'>
+                        {{post.post_content | safe}}
+                    </div>
+                    <div class='edit-info'>
+                        
+                        <i class="far fa-window-close"></i>
+                        <i class="fas fa-save"></i>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <div class='post-info'>
+                        <!-- <i class="fi fi-sr-heart"></i> -->
+                        <div><i class="fi fi-rr-heart"></i></div>
+                        <div><i class="fi fi-rr-comment"></i> </div>
+                        {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
+                        <div><i class="fi bookmark-btn {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
+                        <!-- <i class="fi fi-sr-bookmark"></i> -->
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+    
+        {% empty %}
+
+            
+            <h1 class='empty-post'>No posts yet!!!</h1>
+            <h4 class='empty-post'>Be the first to make a post</h4>
+
+        {% endfor %}
+    </div>
+ 
+    <div class="post-overlay {% if custom_posts is None %}hide-alt-post {% endif %}" id= 'alternative-post-container'> 
+
+        {% for post in custom_posts %}
+            <div class='post-container' data-postId="{{post.id}}">
+                <div class='post-image'>
+                    <img src="{{post.post_creator.profile_picture.url}} " alt="">
+                </div>
+                <div class='post-content'>
+                    <div class='post-title'>
+                        <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                    </div>
+                    <div data-postId='{{post.id}}' class='post-message'>
+                        {{post.post_content | safe}}
+                    </div>
+                    <div class='edit-info'>
+                        
+                        <i class="far fa-window-close"></i>
+                        <i class="fas fa-save"></i>
+                    </div>
+                    <div class='post-info'>
+                        <!-- <i class="fi fi-sr-heart"></i> -->
+                        <div><i class="fi fi-rr-heart"></i></div>
+                        <div><i class="fi fi-rr-comment"></i> </div>
+                        {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
+                        <div><i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
+                        <!-- <i class="fi fi-sr-bookmark"></i> -->
+                    </div>
+                </div>
+
+            </div>
+    
+        {% empty %}
+
+        
+            {% if page == 'FOLLOWING_POSTS' %}
+                <h1 class='empty-post'>No user you are following has made a post </h1>
+
+            {% else %}
+                <h1 class='empty-post'>No Bookmarks</h1>
+            {% endif %}
+
+        {% endfor %}
+
+    </div>
+    <div class='post-overlay' id='following-info-container'>
+        <section class='follow-ind-con'>
+            <div class='follow-ind'><span>Following</span></div>
+            <div class='follow-ind'><span>Followers</span></div>
+            <div class='follow-active-ind'></div>
+        </section>
+        <section class='actual-follow-con'>
+        {% if page == 'FOLLOWERS' %}
+            {% for eachfollow in follow %}
+                <div>
+                    <div class='follow-img'><img src ='{{eachfollow.user_follower.profile_picture.url}}'></div>
+                    <div class='follow-username'><span>{{eachfollow.user_follower.username|title}}<span></div>
+                    <div class='follow-btn'><button> {% if  follow_obj in eachfollow.user_follower.followers.all %}Following{% else %} Follow{% endif %}</button></div>
+                </div>
+            {% empty %}
+                <h3 class='empty-post'>No Followers Yet</h3>
+            {% endfor %}
+        {% else %}
+            {% for eachfollow in follow %}
+                <div>
+                    <div class='follow-img'><img src ='{{eachfollow.profile_picture.url}}'></div>
+                    <div class='follow-username'><span>{{eachfollow.username|title}}<span></div>
+                    <div class='follow-btn'><button> Following </button></div>
+                </div>
+            {% empty %}
+                <h3 class='empty-post'> You are Following No one</h3>
+            {% endfor %}
+        
+        {% endif %}
+        </section>
+
+    </div>
+
+
+    
+    <div class="post-overlay {% if not is_profile %}hide-profile{% endif %}" id='main-profile-section'>
+        <section class='profile-main-info'>
+            <div class='profile-pic-con'>
+                <img src="{{profile_user.profile_picture.url}}" alt="">
+            </div>
+            <div class='profile-info-con'>
+                <div><span class='profile-info-name' >{{profile_user.last_name}} {{profile_user.first_name}}</span></div>
+                <div><span class='profile-info-username' >{{ profile_user.username}}</span> <button id='profile-edit-btn'>Edit Profile</button></div>
+                
+            </div>
+        </section>
+        <section class='profile-more-info'>
+            <div class='profile-info-about-header'><span>About Me</span><span></span></div>
+            <div class='profile-info-about'><span>{% if profile_user.about %} {{profile_user.about}} {% else %} No Bio {% endif %}</span></div>
+            
+            <div class='profile-info-activity'>
+                <div>
+                    <span>{{users_posts.count}}</span>
+                    <span>Posts</span>
+                </div>
+                <div>
+                    <span>{{num_following}}</span>
+                    <span>Following</span>
+                </div>
+        
+                <div>
+                    <span>{{num_followers}}</span>
+                    <span>Followers</span>
+                </div>
+            </div>
+
+        </section>
+        <section class='profile-info-posts'>
+            <div class='profile-post-header'>
+                <h1>My Posts</h1>
+            </div>
+            {% for post in users_posts %}
+            <div class='post-container' data-postId="{{post.id}}">
+                <div class='post-image'>
+                    <img src="{{post.post_creator.profile_picture.url}} " alt="">
+                </div>
+                <div class='post-content'>
+                    <div class='post-title'>
+                        <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                    </div>
+                    <div data-postId='{{post.id}}' class='post-message'>
+                        {{post.post_content | safe}}
+                    </div>
+                    <div class='edit-info'>
+                        
+                        <i class="far fa-window-close"></i>
+                        <i class="fas fa-save"></i>
+                    </div>
+                    <div class='post-info'>
+                        <!-- <i class="fi fi-sr-heart"></i> -->
+                        <div><i class="fi fi-rr-heart"></i></div>
+                        <div><i class="fi fi-rr-comment"></i> </div>
+                        {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
+                        <div><i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
+                        <!-- <i class="fi fi-sr-bookmark"></i> -->
+                    </div>
+                </div>
+
+            </div>
+            {% empty %}
+            <h3 class='empty-post'>You haven't made any post yet</h3>
+            {% endfor %}
+        </section>
+    </div>
+   
+
+{% endblock %}
