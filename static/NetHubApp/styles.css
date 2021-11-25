@@ -5,6 +5,26 @@
   box-sizing: border-box;
   font-family: "Asap", sans-serif;
 }
+/* width
+::-webkit-scrollbar {
+  width: 20px;
+  z-index: 50;
+} */
+
+/* Track */
+/* ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+} */
+
+/* Handle */
+/* ::-webkit-scrollbar-thumb {
+  background: #888;
+} */
+
+/* Handle on hover */
+/* ::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} */
 html {
   /* scroll-behavior:smooth; */
   overflow-y: hidden;
@@ -187,6 +207,7 @@ body {
   border-radius: 50%;
   width: 40px;
   height: 40px;
+  cursor: pointer;
 }
 
 .body-overlay {
@@ -253,7 +274,7 @@ body {
   height: 60%;
   padding-right: 20px;
 }
-.profile-main-info .profile-info-con div:last-child button {
+#profile-edit-btn {
   border: 1px solid whitesmoke;
   background-color: transparent;
   color: whitesmoke;
@@ -671,22 +692,37 @@ textarea {
   width: 10%;
   border-radius: 10px;
 }
+.follow-info {
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 8px;
+}
 
-#following-info-container > .actual-follow-con .follow-btn button {
+.user-following-btn {
   background-color: transparent;
   color: whitesmoke;
   border: 1px solid whitesmoke;
-  padding: 8px 12px;
-  border-radius: 10px;
 }
-#following-info-container > .actual-follow-con .follow-btn button.not-follow {
+.user-not-following-btn {
   background-color: whitesmoke !important;
   color: black !important;
+  border: none;
+}
+.following-con span,
+.followers-con span {
+  cursor: pointer;
 }
 /* #main-home-post-container{
     overflow-y: auto;
     height:100vh;
 } */
+
+/* Post container styling */
+
+.viewProfilerContainer .authorProfileImage,
+.authorProfileName {
+  cursor: pointer;
+}
 .post-container:first-of-type {
   margin-top: 8px;
 }
@@ -716,6 +752,7 @@ textarea {
   height: 60px;
   border-radius: 50%;
 }
+
 .post-content {
   flex-basis: 80%;
   display: flex;
@@ -1046,6 +1083,19 @@ footer a:last-child {
 }
 
 /* REGISTER FORM SECTION */
+/* input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: whitesmoke;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+  transition: background-color 5000s ease-in-out 0s;
+} */
 #signIn-link,
 #signUp-link {
   display: none;
@@ -1093,6 +1143,7 @@ form .form-group .form-container label {
 form .form-group .form-container div {
   flex-basis: 85%;
   display: flex;
+  background-color: transparent;
   align-items: center;
   height: 50px;
   position: relative;

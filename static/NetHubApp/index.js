@@ -52,11 +52,18 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       $(link).click(function (e) {
         e.preventDefault();
         var page = $(this).attr("data-footerLink");
-
+        console.log(page);
         var historyTitle = $(this).attr("data-footerName");
 
         viewsHandler(page, historyTitle, this);
         addActive(footerLinks, this, "footer-active");
+        if (page !== "search") {
+          addActive(
+            mainNavLinks,
+            mainNavLinks.filter(`[data-link=${page}]`),
+            "active-link"
+          );
+        }
       });
     });
     editEvent(editBtnIcon);
@@ -167,16 +174,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
     // REGISTER FORM AUTHENTICATION SECTION
 
-    $("#datepicker").datepicker({
-      maxDate: "-18y",
-      yearRange: "c-52:c",
-      changeMonth: true,
-      changeYear: true,
-    });
-
-    $("#datepicker").datepicker("option", "showAnim", "drop");
-    $("#datepicker").datepicker("option", "dateFormat", "yy-mm-dd");
-
     var inputFields = $("form .form-group .form-container div input");
     var allInputSpans = $("form .form-group .form-container div span");
     $(allInputSpans).each(function (index, span) {
@@ -184,24 +181,23 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         $(span).siblings("input").focus();
       });
     });
-    $("#datepicker").change(function () {
-      var inputSpan = $(this).siblings("span");
-      checkInput(this, inputSpan, false);
-      focusEffect(field, inputSpan, false);
-    });
     $(inputFields).each(function (index, field) {
       var inputSpan = $(field).siblings("span");
 
       checkInput(field, inputSpan, false);
-      $(field).focusin(function () {
+      $(field).on("focusin", function () {
         checkInput(field, inputSpan, true);
         focusEffect(field, inputSpan, true);
       });
-      $(field).focusout(function () {
+      $(field).on("focusout", function () {
         checkInput(field, inputSpan, false);
         focusEffect(field, inputSpan, false);
       });
-      $(field).keyup(function () {
+      $(field).on("change", function () {
+        checkInput(field, inputSpan, false);
+        focusEffect(field, inputSpan, false);
+      });
+      $(field).on("keyup", function () {
         checkInput(field, inputSpan, false);
       });
     });
@@ -236,6 +232,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
     var homePageOnload = true;
     var homeClicked = 0;
     var reloadHome = false;
+    var isMainUser = true;
+    var clickedUser;
     var activeUrl = $(headerTitle).text();
     var targetUser = $(".submain-1-username").attr("data-username");
     var updatedUserProfile = false;
@@ -259,21 +257,36 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             var activeSpanText = activeSpanTitle.toLowerCase();
             $(mainNavLinks).each(function (ind, val) {
               if ($(val).text().trim().toLowerCase() === activeSpanText) {
-                addActive(mainNavLinks, val, "active-link");
+                if (isMainUser) {
+                  addActive(mainNavLinks, val, "active-link");
+                } else {
+                  $(mainNavLinks).removeClass("active-links");
+                  $(footerLinks).removeClass("footer-active");
+                }
               }
             });
             $(headerTitle).text(activeSpanTitle);
             $("title").text(`NETHUB | ${activeSpanTitle.toUpperCase()}`);
-            var emptyMessage =
-              activeSpanText === "following"
-                ? `<h3> You are Following No one</h3>`
-                : `<h3>No Followers Yet</h3>`;
+            var emptyMessage;
+            if (isMainUser) {
+              emptyMessage =
+                activeSpanText === "following"
+                  ? `<h3> You are Following No one</h3>`
+                  : `<h3>No Followers Yet</h3>`;
+            } else {
+              emptyMessage =
+                activeSpanText === "following"
+                  ? `<h3>Following No one</h3>`
+                  : `<h3>No Followers Yet</h3>`;
+            }
+
             history.pushState(
               { page: activeSpanText, emptyMessage: emptyMessage },
               null,
               activeSpanText
             );
-            ajaxNavPage(activeSpanText, emptyMessage);
+            let sendUser = isMainUser ? targetUser : clickedUser;
+            ajaxNavPage(activeSpanText, emptyMessage, sendUser);
           });
         if (
           $(eachHeader).find("span").text().trim().toLowerCase() ===
@@ -300,27 +313,78 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
     }
 
     $(mainNavLinks).each(function (index, navLink) {
-      if (activeUrl.trim() === $(navLink).text().trim()) {
-        addActive(mainNavLinks, navLink, "active-link");
+      let navLinkName = $(navLink).text().trim();
+
+      if (activeUrl.trim() === navLinkName) {
+        let userRequiredPages = ["Profile", "Following", "Followers"];
+        if (userRequiredPages.includes(navLinkName)) {
+          let locationUrl = location.href;
+          let getUserName = locationUrl.split("/")[3];
+          console.log(getUserName, targetUser);
+          if (getUserName.trim() !== targetUser.trim()) {
+            let empty =
+              navLinkName === "Profile"
+                ? "User haven't made any post yet"
+                : navLinkName === "Following"
+                ? "Following No one"
+                : "No Followers Yet";
+
+            $(".empty-post")
+              .filter(`.empty-${navLinkName.toLowerCase()}`)
+              .text(empty);
+            $(mainNavLinks).removeClass("active-link");
+            $(footerLinks).removeClass("footer-active");
+            clickedUser = getUserName.trim();
+            isMainUser = false;
+          }
+        }
+        if (isMainUser) {
+          addActive(mainNavLinks, navLink, "active-link");
+
+          let pages_for_footer = ["Home", "Following Posts", "Bookmarks"];
+          if (pages_for_footer.includes(navLinkName)) {
+            addActive(
+              footerLinks,
+              footerLinks.filter(`[data-footerName ="${navLinkName}"]`),
+              "footer-active"
+            );
+          } else {
+            $(footerLinks).removeClass("footer-active");
+          }
+        }
       }
 
-      $(navLink).click(function (e) {
+      $(navLink).on("click", function (e) {
         e.preventDefault();
         var page = $(this).attr("data-link");
         var historyTitle = $(this).text();
-        console.log(page);
+        isMainUser = true;
+        clickedUser = null;
         viewsHandler(page, historyTitle, this);
       });
     });
 
     function viewsHandler(page, historyTitle, clickedLink) {
       var emptyMessage;
-      addActive(mainNavLinks, clickedLink, "active-link");
+      let pages_for_footer = ["home", "following_posts", "bookmarks"];
+      if (clickedLink !== null)
+        addActive(mainNavLinks, clickedLink, "active-link");
+      if (pages_for_footer.includes(page)) {
+        addActive(
+          footerLinks,
+          footerLinks.filter(`[data-footerLink=${page}]`),
+          "footer-active"
+        );
+      } else {
+        $(footerLinks).removeClass("footer-active");
+      }
+
       $(altView).html("");
 
       $(headerTitle).text(historyTitle);
       $("title").text(`NETHUB | ${historyTitle.toUpperCase()}`);
 
+      var currentUser = targetUser;
       if (page === "home") {
         if (homePageOnload) {
           reloadHome = true;
@@ -343,24 +407,38 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         emptyMessage = `<h1 class='empty-post'>No Bookmarks</h1>`;
         showActiveView(altView);
       } else if (page === "followers" || page === "following") {
-        emptyMessage =
-          page === "followers"
-            ? `<h3 class='empty-post'>No Followers Yet</h3>`
-            : `<h3 class='empty-post'> You are Following No one</h3>`;
+        if (isMainUser) {
+          emptyMessage =
+            page === "followers"
+              ? `<h3 class='empty-post'>No Followers Yet</h3>`
+              : `<h3 class='empty-post'> You are Following No one</h3>`;
+        } else {
+          currentUser = clickedUser;
+          emptyMessage =
+            page === "followers"
+              ? `<h3 class='empty-post'>No Followers Yet</h3>`
+              : `<h3 class='empty-post'> Following No one</h3>`;
+        }
+
         showActiveView(followView);
         var followHeaders = $(".follow-ind");
         changeFollowPage(followHeaders, page.trim());
       } else if (page === "profile") {
-        emptyMessage =
-          "<h3 class='empty-post'> You haven't made any post yet</h3>";
+        if (isMainUser) {
+          emptyMessage =
+            "<h3 class='empty-post'> You haven't made any post yet</h3>";
+        } else {
+          currentUser = clickedUser;
+          emptyMessage =
+            "<h3 class='empty-post'> User haven't made any post yet</h3>";
+        }
         showActiveView(profileView);
       } else {
         showActiveView(altView);
-        emptyMessage = `<h1 class='empty-post'>No user you are following has made a post </h1>`;
+        emptyMessage = `<h1 class='empty-post'>No user you are following <br>has made a post </h1>`;
       }
       pushHistoryState(page, emptyMessage);
-
-      ajaxNavPage(page, emptyMessage);
+      ajaxNavPage(page, emptyMessage, currentUser);
     }
 
     function showActiveView(activeView) {
@@ -372,11 +450,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
     function pushHistoryState(page, emptyMessage) {
       infoPages = ["followers", "following", "profile"];
+      let user = isMainUser ? targetUser : clickedUser;
       if (infoPages.includes(page)) {
         history.pushState(
           { page: page, emptyMessage: emptyMessage },
           null,
-          `/${targetUser}/${page}`
+          `/${user}/${page}`
         );
       } else {
         history.pushState(
@@ -387,10 +466,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       }
     }
 
-    function ajaxNavPage(page, emptyMessage) {
-      console.log(page);
+    function ajaxNavPage(page, emptyMessage, presentUser) {
       $.ajax({
-        url: `/indexAjax/${page}?username=${targetUser}`,
+        url: `/indexAjax/${page}?username=${presentUser}`,
         type: "GET",
       }).done(function (data) {
         if (data["profpic_empty"]) {
@@ -403,7 +481,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             emptyMessage,
             page,
             true,
-            data["is_following"],
+            data.authUser,
             data.user
           );
         else
@@ -412,7 +490,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             emptyMessage,
             page,
             false,
-            false,
+            data.authUser,
             data.user,
             data.numfollowing,
             data.numfollowers
@@ -425,7 +503,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       empty,
       page,
       follow = false,
-      is_following = false,
+      authUser,
       user = null,
       numfollowing = null,
       numfollower = null
@@ -434,11 +512,18 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         homeClicked = 0;
         reloadHome = false;
         $(profileView).html("");
-        renderProfilePage(dataset, user, numfollowing, numfollower);
+        renderProfilePage(
+          dataset,
+          user,
+          authUser,
+          numfollowing,
+          numfollower,
+          empty
+        );
       } else if (page !== "home") {
         homeClicked = 0;
         reloadHome = false;
-        formatPost(dataset, empty, false, follow, is_following, user);
+        formatPost(dataset, empty, false, follow, authUser, user);
       } else {
         if (reloadHome || updatedUserProfile) {
           formatPost(dataset, empty, true, false, null, user);
@@ -451,7 +536,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       empty,
       forHome = false,
       follow = false,
-      is_following,
+      authUser,
       user
     ) {
       var followSection = $(followView).find(".actual-follow-con");
@@ -462,20 +547,30 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       } else {
         if (follow) {
           $(followSection).html("");
-          var follow_btn = is_following
-            ? `<button>Following</button>`
-            : `<button class='not-follow'>Follow</button>`;
+          let follow_btn, followBtnTemplate;
           $(dataset).each(function (index, followInfo) {
+            if (followInfo.username.toLowerCase() !== authUser) {
+              if (followInfo.followers.includes(authUser)) {
+                follow_btn = `<button data-followFor='followPage' class= 'follow-info user-following-btn'>Following</button>`;
+              } else {
+                follow_btn = `<button data-followFor='followPage' class='follow-info user-not-following-btn'>Follow</button>`;
+              }
+              followBtnTemplate = `<div class='follow-btn'>${follow_btn}</div>`;
+            } else {
+              followBtnTemplate = "";
+            }
+
             var followTemplate = `
                                     <div>
                                         <div class='follow-img'><img src ='${followInfo.pic}'></div>
                                         <div class='follow-username'><span>${followInfo.username}<span></div>
-                                        <div class='follow-btn'>${follow_btn}</div>
+                                        ${followBtnTemplate}
                                     </div>
                                 `;
 
             $(followSection).append(followTemplate);
           });
+          getUserToFollow($(followSection).find(".follow-info"));
         } else {
           if (forHome) {
             var newPostTemp = `
@@ -501,9 +596,10 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             enablePostBtn(postTextarea, hiddenInput, postBtn);
           }
           $(dataset).each(function (index, post) {
-            var template = postTemplate(post, user);
+            var template = postTemplate(post, user, false);
             var postCon = $("<div>");
             $(postCon).addClass("post-container");
+            $(postCon).addClass("viewProfilerContainer");
             $(postCon).html(template);
             $(postCon).attr("data-postId", post.id);
 
@@ -520,11 +616,29 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
           } else view = altView;
           editEvent($(view).find(".fi-rr-pencil"));
           addToBookmark($(view).find(".bookmark-btn"));
+          postToProfileEventHandler($(view).find(".viewProfilerContainer"));
         }
       }
     }
 
-    function renderProfilePage(dataset, user, numfollowing, numfollower) {
+    function renderProfilePage(
+      dataset,
+      user,
+      authUser,
+      numfollowing,
+      numfollower,
+      empty
+    ) {
+      let dispBtn;
+      if (user.username.toLowerCase() === authUser) {
+        dispBtn = `<button id='profile-edit-btn'>Edit Profile</button></div>`;
+      } else {
+        if (user.followers.includes(authUser)) {
+          dispBtn = `<button data-followFor='profilePage' class= 'follow-info user-following-btn'>Following</button>`;
+        } else {
+          dispBtn = `<button data-followFor='profilePage' class='follow-info user-not-following-btn'>Follow</button>`;
+        }
+      }
       var bioData = user.about ? user.about : "No Bio";
       var profileMain = `
                             <section class='profile-main-info'>
@@ -533,8 +647,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 </div>
                                 <div class='profile-info-con'>
                                     <div><span class='profile-info-name' >${user.firstName} ${user.lastName}</span></div>
-                                    <div><span class='profile-info-username' >${user.username}</span> <button id='profile-edit-btn'>Edit Profile</button></div>
-                                    
+                                    <div><span class='profile-info-username' >${user.username}</span> 
+                                    ${dispBtn}
                                 </div>
                             </section>
                             <section class='profile-more-info'>
@@ -546,13 +660,13 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                         <span>${dataset.length}</span>
                                         <span>Posts</span>
                                     </div>
-                                    <div>
+                                    <div class= 'following-con'>
                                         <span>${numfollowing}</span>
                                         <span>Following</span>
                                     </div>
                             
-                                    <div>
-                                        <span>${numfollower}</span>
+                                    <div class='followers-con'>
+                                        <span class='num_followers_count'>${numfollower}</span>
                                         <span>Followers</span>
                                     </div>
                                 </div>
@@ -560,7 +674,10 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             </section> 
                     `;
       $(profileView).html(profileMain);
-
+      profUser = $(profileView).find(".profile-info-username").text().trim();
+      navToFollowPage($(profileView).find(".following-con"), profUser);
+      navToFollowPage($(profileView).find(".followers-con"), profUser);
+      getUserToFollow($(profileView).find(".follow-info"));
       $(profileView).find("#profile-edit-btn").click(activateEditPage);
 
       var profileSection = $("<section>");
@@ -571,22 +688,34 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         </div>
                     `;
       $(profileSection).html(profPostHeader);
+      if (dataset.length === 0) {
+        $(profileSection).append(empty);
+      } else {
+        $(dataset).each(function (index, post) {
+          var profileTemplate = postTemplate(post, user, true);
+          var postCon = $("<div>");
+          $(postCon).addClass("post-container");
+          $(postCon).attr("data-postId", post.id);
+          $(postCon).html(profileTemplate);
+          $(profileSection).append(postCon);
+        });
+        addToBookmark($(profileSection).find(".bookmark-btn"));
+      }
 
-      $(dataset).each(function (index, post) {
-        var profileTemplate = postTemplate(post, user);
-        var postCon = $("<div>");
-        $(postCon).addClass("post-container");
-        $(postCon).attr("data-postId", post.id);
-        $(postCon).html(profileTemplate);
-        $(profileSection).append(postCon);
-      });
-      addToBookmark($(profileSection).find(".bookmark-btn"));
       $(profileView).append(profileSection);
 
       editEvent($(profileView).find(".fi-rr-pencil"));
     }
 
-    function postTemplate(post, user) {
+    function postTemplate(post, user, forProfile) {
+      let authorImage = "";
+      let authorName = "";
+      let dataAuthor = "";
+      if (!forProfile) {
+        authorImage = "class = 'authorProfileImage'";
+        authorName = "authorProfileName";
+        dataAuthor = `data-author=${post.post_creator_username.toLowerCase()}`;
+      }
       if (user.bookmarks.includes(post.id)) {
         bookmarkClass = "fi-sr-bookmark";
       } else {
@@ -599,11 +728,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       template = `
                                 
                         <div class='post-image'>
-                            <img src="${post.post_creator_pic} " alt="">
+                            <img ${dataAuthor} ${authorImage} src="${post.post_creator_pic} " alt="">
                         </div>
                         <div class='post-content'>
                             <div class='post-title'>
-                                <span class='post-username'>${post.post_creator_username}</span> <span class='post-timestamp'>${post.post_date}</span>
+                                <span ${dataAuthor} class='post-username ${authorName}'>${post.post_creator_username}</span> <span class='post-timestamp'>${post.post_date}</span>
                             </div>
                             <div data-postId='${post.id}' class='post-message'>
                                 ${post.post_content}
@@ -864,6 +993,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             imageByte = img;
             var getImage = $(editSection).find("#edit-pics-con");
             $(getImage).attr("src", img);
+            $(".image-nav-menu").attr("src", img);
             $(cropMainCon).css("display", "none");
             $(editSection).css("overflow-y", "scroll");
             profileEdited = true;
@@ -948,5 +1078,167 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         });
       });
     }
+
+    // handle following and unfollowing
+
+    // trying to get the user when the follow button is clicked
+    getUserToFollow($(".follow-info"));
+    function getUserToFollow(followBtns) {
+      $(followBtns).each(function (index, btn) {
+        $(btn)
+          .off("click")
+          .on("click", function () {
+            let userToFollow, forProfile;
+            console.log(this);
+            if ($(btn).attr("data-followFor") === "profilePage") {
+              userToFollow = $(btn)
+                .siblings(".profile-info-username")
+                .text()
+                .trim()
+                .toLowerCase();
+              forProfile = true;
+              console.log(userToFollow);
+            } else {
+              userToFollow = $(btn)
+                .closest(".follow-btn")
+                .siblings(".follow-username")
+                .find("span")
+                .text()
+                .trim()
+                .toLowerCase();
+              console.log(userToFollow);
+              forProfile = false;
+            }
+            handleFollowing(userToFollow, btn, forProfile);
+          });
+      });
+    }
+
+    // handle follow and unfollow of users
+    function handleFollowing(userToFollow, btn, forProfile) {
+      let follow_type;
+
+      if ($(btn).hasClass("user-following-btn")) {
+        follow_type = "unfollow";
+      } else {
+        follow_type = "follow";
+      }
+      let putData = {
+        follow_type: follow_type,
+        authUser: targetUser,
+        affectedUser: userToFollow,
+      };
+      let token = $("#csrf").val();
+      $.ajax({
+        url: "/handle_follow",
+        type: "PUT",
+        dataType: "json",
+        data: JSON.stringify(putData),
+        headers: {
+          "X-CSRFToken": token,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      }).done(function (resp) {
+        if (resp.message === "successful") {
+          if (resp.follow && follow_type === "follow") {
+            $(btn).removeClass("user-not-following-btn");
+
+            $(btn).addClass("user-following-btn");
+            $(btn).text("Following");
+          } else {
+            $(btn).removeClass("user-following-btn");
+            $(btn).addClass("user-not-following-btn");
+            $(btn).text("Follow");
+          }
+          if (forProfile) {
+            $(btn)
+              .closest(".profile-main-info")
+              .siblings(".profile-more-info")
+              .find(".num_followers_count")
+              .text(resp["follow_count"]);
+          }
+        }
+      });
+    }
+
+    // Handle navigation to following page
+    let profUser = $(".profile-info-username").text().trim();
+    navToFollowPage($(".following-con"), profUser);
+    navToFollowPage($(".followers-con"), profUser);
+    function navToFollowPage(con, profileUser) {
+      $(con)
+        .off("click")
+        .on("click", "span", function () {
+          let page, title;
+          if ($(con).hasClass("following-con")) {
+            page = "following";
+            title = "Following";
+          } else {
+            page = "followers";
+            title = "Followers";
+          }
+
+          if (targetUser === profileUser.toLowerCase()) {
+            isMainUser = true;
+
+            $(mainNavLinks).each(function (index, nav_link) {
+              if ($(nav_link).attr("data-link") === page) {
+                addActive(mainNavLinks, nav_link, "active-link");
+              }
+            });
+          } else {
+            isMainUser = false;
+            clickedUser = profileUser.toLowerCase();
+            $(mainNavLinks).removeClass("active-link");
+            $(footerLinks).removeClass("footer-active");
+          }
+          viewsHandler(page, title, null);
+        });
+    }
+
+    // linking posts to profile pages by clicking on username or their pictures
+
+    // First adding eventListener to the elements
+    postToProfileEventHandler($(".viewProfilerContainer"));
+    function postToProfileEventHandler(elem) {
+      $(elem).each(function (index, eachEl) {
+        $(eachEl)
+          .off("click")
+          .on(
+            "click",
+            "span.authorProfileName,img.authorProfileImage",
+            function (e) {
+              let targ = e.target;
+              console.log(e.target);
+
+              return routeToProfilePage($(targ).attr("data-author"));
+            }
+          );
+      });
+    }
+
+    // Then function for routing to profile page
+
+    function routeToProfilePage(profUsername) {
+      if (targetUser === profUsername) {
+        isMainUser = true;
+
+        $(mainNavLinks).each(function (index, nav_link) {
+          if ($(nav_link).attr("data-link") === "profile") {
+            addActive(mainNavLinks, nav_link, "active-link");
+          }
+        });
+      } else {
+        isMainUser = false;
+        clickedUser = profUsername;
+        $(mainNavLinks).removeClass("active-link");
+        $(footerLinks).removeClass("footer-active");
+      }
+      viewsHandler("profile", "Profile", null);
+    }
+
+    // views handler function
+    // navlinks displayed correctly
+    // checking if username is the targetUser
   });
 });

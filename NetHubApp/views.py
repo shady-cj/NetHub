@@ -99,8 +99,10 @@ def UsersInfoPage(request,username,page):
                 getfollow = Follower.objects.get(user_follower = getuser)
             follow = None
             is_profile = False
+            isAuthUser = request.user == getuser 
+            authFollow = Follower.objects.get(user_follower= request.user)
+            
             users_posts = Post.objects.filter(post_creator = getuser)
-                
             if page == 'following':
                 
                 follow = getfollow.following.all()
@@ -113,6 +115,7 @@ def UsersInfoPage(request,username,page):
             elif page == 'profile':
                 
                 is_profile = True
+                
             num_followers =  getuser.followers.all().count()
             num_following = getfollow.following.all().count()
             return render(request, "NetHubApp/index.html",{
@@ -122,6 +125,8 @@ def UsersInfoPage(request,username,page):
                 "follow":follow,
                 "profile_user":getuser,
                 "is_profile":is_profile,
+                "authFollow":authFollow,
+                "isAuthUser":isAuthUser,
                 "follow_obj":getfollow,
                 "num_followers":num_followers,
                 "num_following":num_following,
@@ -146,7 +151,6 @@ def indexAjax(request,page):
                 profpic_empty = True
         except User.DoesNotExist:
             raise Http404('User Not Found')
-        print(getuser,getuser.id)
 
         try:	
             getfollow=Follower.objects.get(user_follower=getuser)
@@ -156,7 +160,7 @@ def indexAjax(request,page):
         follow = None
         follow_list=[]
         is_following = False
-
+        authUser = request.user.username
         if page == 'bookmarks':
             posts = [b.post for b in Bookmark.objects.filter(user = request.user).order_by('-id')]
         
@@ -170,15 +174,12 @@ def indexAjax(request,page):
         elif page == 'followers':
             follow = getuser.followers.all()
             follow_list = [f.user_follower.serialize() for f in follow]
-            for i in follow:
-                if getfollow in i.user_follower.followers.all():
-                    is_following = True
+            
 
 
         elif page == 'following':
             follow = getfollow.following.all()
             follow_list = [f.serialize() for f in follow]
-            is_following = True
 
         elif page == 'profile':
             posts = Post.objects.filter(post_creator=getuser).order_by("-post_date").all()
@@ -190,6 +191,7 @@ def indexAjax(request,page):
                 'posts':[post.serialize() for post in posts],
                 'follow':follow_list,
                 'is_following':is_following,
+                'authUser':authUser,
                 'user':getuser.serialize(),
                 'numfollowers':num_followers,
                 'numfollowing':num_following,
@@ -216,7 +218,6 @@ def create_post(request,):
     if request.method == "POST":
         post_creator_id = request.user.id
         post_content = request.POST["post_content"]
-        print(post_content)
         post_image = request.FILES.get("post_image")
         post_user = User.objects.get(id=int(post_creator_id))
         Post.objects.create(post_creator = post_user, post_content=post_content, post_image=post_image)
@@ -320,6 +321,43 @@ def updateProfile(request,username):
             }
         )
 
+
+def handleFollow(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if is_ajax and request.method == 'PUT':
+        data = json.load(request)
+        authUser = data.get('authUser').lower()
+        affectedUser = data.get('affectedUser')
+        follow_type = data.get('follow_type')
+        follow = None
+        try:
+            getAuthUser = User.objects.get(username=authUser)
+            getAffectedUser = User.objects.get(username= affectedUser)
+        
+        except User.DoesNotExist:
+            return JsonResponse({'message':'error no user found'})
+
+        getAuthFollow = Follower.objects.get(user_follower = getAuthUser)
+        
+
+        if follow_type == "follow":
+            if getAffectedUser not in getAuthFollow.following.all():
+                getAuthFollow.following.add(getAffectedUser)
+                follow = True
+    
+        elif follow_type == "unfollow":
+            if getAffectedUser in getAuthFollow.following.all():
+                getAuthFollow.following.remove(getAffectedUser)
+                follow = False
+
+        follow_count = getAffectedUser.followers.all().count()
+
+        return JsonResponse({'message':'successful','follow':follow, 'follow_count':follow_count})
+
+
+
+
 def BookmarkPost(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax and request.method == 'PUT':
@@ -383,13 +421,7 @@ def register(request):
         email = request.POST["email"].strip()
         first_name = request.POST["fname"].strip()
         last_name = request.POST["lname"].strip()
-        Date_of_Birth = request.POST.get("dob").strip()
-        
 
-        print(Date_of_Birth)
-
-        if Date_of_Birth == '':
-            Date_of_Birth =None
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
@@ -404,7 +436,7 @@ def register(request):
 		
         else:
             try:
-                user = User.objects.create_user(username, email, password, first_name=first_name,last_name=last_name,Date_of_Birth=Date_of_Birth)
+                user = User.objects.create_user(username, email, password, first_name=first_name,last_name=last_name)
                 user.save()
                 Follower.objects.create(user_follower=user)
                 login(request, user)

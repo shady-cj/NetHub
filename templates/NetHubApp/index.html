@@ -27,13 +27,13 @@
 
         
         {% for post in posts %}
-            <div class='post-container' data-postId="{{post.id}}"> 
+            <div class='post-container viewProfilerContainer' data-postId="{{post.id}}"> 
                 <div class='post-image'>
-                    <img src="{{post.post_creator.profile_picture.url}} " alt="">
+                    <img data-author={{post.post_creator.username}} class='authorProfileImage' src="{{post.post_creator.profile_picture.url}} " alt="">
                 </div>
                 <div class='post-content'>
                     <div class='post-title'>
-                        <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                        <span data-author={{post.post_creator.username}} class='post-username authorProfileName'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
                     </div>
                     <div data-postId='{{post.id}}' class='post-message'>
                         {{post.post_content | safe}}
@@ -69,13 +69,13 @@
     <div class="post-overlay {% if custom_posts is None %}hide-alt-post {% endif %}" id= 'alternative-post-container'> 
 
         {% for post in custom_posts %}
-            <div class='post-container' data-postId="{{post.id}}">
+            <div class='post-container viewProfilerContainer' data-postId="{{post.id}}">
                 <div class='post-image'>
-                    <img src="{{post.post_creator.profile_picture.url}} " alt="">
+                    <img data-author={{post.post_creator.username}} class='authorProfileImage' src="{{post.post_creator.profile_picture.url}} " alt="">
                 </div>
                 <div class='post-content'>
                     <div class='post-title'>
-                        <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                        <span  data-author={{post.post_creator.username}} class='post-username authorProfileName'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
                     </div>
                     <div data-postId='{{post.id}}' class='post-message'>
                         {{post.post_content | safe}}
@@ -100,8 +100,8 @@
         {% empty %}
 
         
-            {% if page == 'FOLLOWING_POSTS' %}
-                <h1 class='empty-post'>No user you are following has made a post </h1>
+            {% if page == 'FOLLOWING POSTS' %}
+                <h1 class='empty-post'>No user you are following <br> has made a post </h1>
 
             {% else %}
                 <h1 class='empty-post'>No Bookmarks</h1>
@@ -120,22 +120,42 @@
         {% if page == 'FOLLOWERS' %}
             {% for eachfollow in follow %}
                 <div>
-                    <div class='follow-img'><img src ='{{eachfollow.user_follower.profile_picture.url}}'></div>
-                    <div class='follow-username'><span>{{eachfollow.user_follower.username|title}}<span></div>
-                    <div class='follow-btn'><button> {% if  follow_obj in eachfollow.user_follower.followers.all %}Following{% else %} Follow{% endif %}</button></div>
+                    <div class='follow-img'>
+                        <img src ="{{eachfollow.user_follower.profile_picture.url}}">
+                    </div>
+                    <div class='follow-username'>
+                        <span>{{eachfollow.user_follower.username|title}}<span>
+                    </div>
+                    {% if authFollow.user_follower != eachfollow.user_follower %}
+                        <div class='follow-btn'> 
+                            {% if  eachfollow.user_follower in authFollow.following.all %}
+                                <button data-followFor='followPage' class= 'user-following-btn follow-info' >Following</button>
+                            {% else %} 
+                                <button data-followFor='followPage'class='follow-info user-not-following-btn'>Follow </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             {% empty %}
-                <h3 class='empty-post'>No Followers Yet</h3>
+                <h3 class='empty-post empty-followers'>No Followers Yet</h3>
             {% endfor %}
         {% else %}
             {% for eachfollow in follow %}
                 <div>
                     <div class='follow-img'><img src ='{{eachfollow.profile_picture.url}}'></div>
                     <div class='follow-username'><span>{{eachfollow.username|title}}<span></div>
-                    <div class='follow-btn'><button> Following </button></div>
+                    {% if authFollow.user_follower != eachfollow %}
+                        <div class='follow-btn'>
+                            {% if  eachfollow in authFollow.following.all %}
+                                <button data-followFor='followPage' class= 'user-following-btn follow-info' >Following</button>
+                            {% else %} 
+                                <button data-followFor='followPage'class='follow-info user-not-following-btn'>Follow </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             {% empty %}
-                <h3 class='empty-post'> You are Following No one</h3>
+                <h3 class='empty-post empty-following'> You are Following No one</h3>
             {% endfor %}
         
         {% endif %}
@@ -151,8 +171,21 @@
                 <img src="{{profile_user.profile_picture.url}}" alt="">
             </div>
             <div class='profile-info-con'>
-                <div><span class='profile-info-name' >{{profile_user.last_name}} {{profile_user.first_name}}</span></div>
-                <div><span class='profile-info-username' >{{ profile_user.username}}</span> <button id='profile-edit-btn'>Edit Profile</button></div>
+                <div>
+                    <span class='profile-info-name' >{{profile_user.last_name}} {{profile_user.first_name}}</span>
+                </div>
+                <div>
+                    <span class='profile-info-username' >{{ profile_user.username}}</span> 
+                    {% if isAuthUser %}
+                        <button id='profile-edit-btn'>Edit Profile</button> 
+                    {% else %}
+                        {% if follow_obj.user_follower in authFollow.following.all %}
+                            <button data-followFor='profilePage' class= 'follow-info user-following-btn' >Following</button>    
+                        {% else %} 
+                            <button data-followFor='profilePage'class='follow-info user-not-following-btn'>Follow </button>
+                        {% endif %}
+                    {% endif %}
+                </div>
                 
             </div>
         </section>
@@ -165,13 +198,13 @@
                     <span>{{users_posts.count}}</span>
                     <span>Posts</span>
                 </div>
-                <div>
+                <div  class= 'following-con'>
                     <span>{{num_following}}</span>
                     <span>Following</span>
                 </div>
         
-                <div>
-                    <span>{{num_followers}}</span>
+                <div class='followers-con'>
+                    <span class='num_followers_count'>{{num_followers}}</span>
                     <span>Followers</span>
                 </div>
             </div>
@@ -210,7 +243,7 @@
 
             </div>
             {% empty %}
-            <h3 class='empty-post'>You haven't made any post yet</h3>
+            <h3 class='empty-post empty-profile'>You haven't made any post yet</h3>
             {% endfor %}
         </section>
     </div>

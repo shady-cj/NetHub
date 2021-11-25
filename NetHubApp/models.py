@@ -32,7 +32,8 @@ class User(AbstractUser):
 			'about':self.about,
 			'bookmarks':[b.post.id for b in self.user_bookmark.all()],
 			'firstName':self.first_name,
-			'lastName':self.last_name
+			'lastName':self.last_name,
+			'followers':[f.user_follower.username for f in self.followers.all()]
 
 		}
 
