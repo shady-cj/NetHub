@@ -161,6 +161,7 @@ def indexAjax(request,page):
         follow_list=[]
         is_following = False
         authUser = request.user.username
+        print(authUser)
         if page == 'bookmarks':
             posts = [b.post for b in Bookmark.objects.filter(user = request.user).order_by('-id')]
         
@@ -311,13 +312,14 @@ def updateProfile(request,username):
         num_followers =  getUser.followers.all().count()
         num_following = getfollow.following.all().count()
         users_posts = getUser.posts.all().order_by("-post_date").all()
-
+        authUser = request.user.username
         return JsonResponse(
             {
                 'user':getUser.serialize(),
                 'users_posts':[post.serialize() for post in users_posts],
                 'num_following':num_following,
-                'num_followers':num_followers
+                'num_followers':num_followers,
+                'authUser':authUser
             }
         )
 
@@ -389,7 +391,39 @@ def BookmarkPost(request):
         getUser.save()
         return JsonResponse({'message':message})
         
-        
+
+def handleLike(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if is_ajax and request.method == 'PUT':
+        data = json.load(request)
+        post_id = data.get('postId')
+        status = data.get('status')
+
+        try:
+            getPost = Post.objects.get(id = int(post_id))
+        except Post.DoesNotExist:
+            return JsonResponse({'error':'No post of such id'})
+
+        if status == 'like':
+            print(getPost.liked_by.all(), request.user)
+            if request.user not in getPost.liked_by.all():
+                getPost.liked_by.add(request.user)
+                getPost.post_likes +=1
+                getPost.save()
+                message = 'liked successfully'
+
+        elif status == 'unlike':
+            if request.user in getPost.liked_by.all() and getPost.post_likes > 0:
+                getPost.liked_by.remove(request.user)
+                getPost.post_likes -= 1
+                getPost.save()
+                message = 'unliked successfully'
+
+        return JsonResponse({'message':message, 'likes':getPost.post_likes})
+
+
+
 def login_view(request):    
     if request.method == "POST": 
     	# Attempt to sign user in

@@ -484,17 +484,16 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             data.authUser,
             data.user
           );
-        else
-          loadViews(
-            data.posts,
-            emptyMessage,
-            page,
-            false,
-            data.authUser,
-            data.user,
-            data.numfollowing,
-            data.numfollowers
-          );
+        loadViews(
+          data.posts,
+          emptyMessage,
+          page,
+          false,
+          data.authUser,
+          data.user,
+          data.numfollowing,
+          data.numfollowers
+        );
       });
     }
 
@@ -523,10 +522,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       } else if (page !== "home") {
         homeClicked = 0;
         reloadHome = false;
+
         formatPost(dataset, empty, false, follow, authUser, user);
       } else {
         if (reloadHome || updatedUserProfile) {
-          formatPost(dataset, empty, true, false, null, user);
+          formatPost(dataset, empty, true, false, authUser, user);
         }
       }
     }
@@ -596,7 +596,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             enablePostBtn(postTextarea, hiddenInput, postBtn);
           }
           $(dataset).each(function (index, post) {
-            var template = postTemplate(post, user, false);
+            var template = postTemplate(post, user, false, authUser);
             var postCon = $("<div>");
             $(postCon).addClass("post-container");
             $(postCon).addClass("viewProfilerContainer");
@@ -616,6 +616,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
           } else view = altView;
           editEvent($(view).find(".fi-rr-pencil"));
           addToBookmark($(view).find(".bookmark-btn"));
+          addEventToLikeBtns($(view).find(".post-container"));
           postToProfileEventHandler($(view).find(".viewProfilerContainer"));
         }
       }
@@ -629,6 +630,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       numfollower,
       empty
     ) {
+      $(profileView).scrollTop(0);
+
       let dispBtn;
       if (user.username.toLowerCase() === authUser) {
         dispBtn = `<button id='profile-edit-btn'>Edit Profile</button></div>`;
@@ -692,7 +695,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         $(profileSection).append(empty);
       } else {
         $(dataset).each(function (index, post) {
-          var profileTemplate = postTemplate(post, user, true);
+          var profileTemplate = postTemplate(post, user, true, authUser);
           var postCon = $("<div>");
           $(postCon).addClass("post-container");
           $(postCon).attr("data-postId", post.id);
@@ -703,14 +706,16 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       }
 
       $(profileView).append(profileSection);
-
       editEvent($(profileView).find(".fi-rr-pencil"));
+      addEventToLikeBtns($(profileView).find(".post-container"));
     }
 
-    function postTemplate(post, user, forProfile) {
+    function postTemplate(post, user, forProfile, authUser) {
       let authorImage = "";
       let authorName = "";
       let dataAuthor = "";
+      let likeBtnTemp;
+      let likes;
       if (!forProfile) {
         authorImage = "class = 'authorProfileImage'";
         authorName = "authorProfileName";
@@ -720,6 +725,21 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         bookmarkClass = "fi-sr-bookmark";
       } else {
         bookmarkClass = "fi-rr-bookmark";
+      }
+
+      const checkLike = post["liked_by"].find((item) => {
+        return item.username === authUser;
+      });
+      if (checkLike) {
+        likeBtnTemp = `<i class="fi fi-sr-heart like-icon"></i> `;
+      } else {
+        likeBtnTemp = `<i class="fi fi-rr-heart like-icon"></i>`;
+      }
+
+      if (+post.post_likes > 0) {
+        likes = `${post.post_likes}`;
+      } else {
+        likes = "";
       }
       var userEditBtn =
         +post.post_creator_id === +userOnlineId
@@ -743,12 +763,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 <i class="fas fa-save"></i>
                             </div>
                             <div class='post-info'>
-                                <!-- <i class="fi fi-sr-heart"></i> -->
-                                <div><i class="fi fi-rr-heart"></i></div>
-                                <div><i class="fi fi-rr-comment"></i> </div>
+                
+                                <div>${likeBtnTemp}<span class='like-count'>${likes}</span></div>
+                                <div><i class="fi fi-rr-comment comment-icon"></i> <span class='comment-count'></span></div>
                                 ${userEditBtn}
                                 <div><i class="fi ${bookmarkClass} bookmark-btn "></i> </div>
-                                <!-- <i class="fi fi-sr-bookmark"></i> -->
                             </div>
                         </div>
 
@@ -841,18 +860,21 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                   alert("An error occured " + data.error);
                 } else {
                   targetUser = data.user.username.toLowerCase();
-                  renderProfilePage(
-                    data["users_posts"],
-                    data.user,
-                    data["num_following"],
-                    data["num_followers"]
-                  );
+
                   console.log(data.user);
                   var empty =
                     "<h3 class='empty-post'> You haven't made any post yet</h3>";
                   if (imageByte !== null) {
                     $("#submain-1-userpic").attr("src", imageByte);
                   }
+                  renderProfilePage(
+                    data["users_posts"],
+                    data.user,
+                    data.authUser,
+                    data["num_following"],
+                    data["num_followers"],
+                    empty
+                  );
                   pushHistoryState("profile", empty);
 
                   $(".submain-1-username").attr("data-username", targetUser);
@@ -1203,17 +1225,17 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
     function postToProfileEventHandler(elem) {
       $(elem).each(function (index, eachEl) {
         $(eachEl)
+          .find("span.authorProfileName,img.authorProfileImage")
           .off("click")
-          .on(
-            "click",
-            "span.authorProfileName,img.authorProfileImage",
-            function (e) {
+          .on("click", function (e) {
+            e.stopPropagation();
+            if (targetUser) {
               let targ = e.target;
               console.log(e.target);
 
               return routeToProfilePage($(targ).attr("data-author"));
             }
-          );
+          });
       });
     }
 
@@ -1237,8 +1259,67 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       viewsHandler("profile", "Profile", null);
     }
 
-    // views handler function
-    // navlinks displayed correctly
-    // checking if username is the targetUser
+    // Handling like features here, like and unliking posts with display of like counts
+    addEventToLikeBtns($(".post-container"));
+
+    // adding event listeners to the like icons and getting post id
+
+    function addEventToLikeBtns(elems) {
+      $(elems).each(function (index, elem) {
+        $(elem)
+          .find("i.like-icon")
+          .off("click")
+          .on("click", function (e) {
+            e.stopPropagation();
+            let targ = e.target;
+            let status;
+            let postId = $(targ).closest(".post-container").attr("data-postId");
+
+            if ($(targ).hasClass("fi-sr-heart")) {
+              status = "unlike";
+            } else {
+              status = "like";
+            }
+            handleLikeFunctionality(postId, status, targ);
+          });
+      });
+    }
+
+    // function to handle the likes
+
+    function handleLikeFunctionality(postId, status, likeBtn) {
+      let token = $("#csrf").val();
+      if (targetUser) {
+        $.ajax({
+          url: "/handle_like",
+          type: "PUT",
+          dataType: "json",
+          data: JSON.stringify({ postId: postId, status: status }),
+          headers: {
+            "X-CSRFToken": token,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        }).done(function (data) {
+          if (data.message) {
+            let likeDisplaySpan = $(likeBtn).siblings("span.like-count");
+            if (data.message === "liked successfully" && status === "like") {
+              $(likeBtn).removeClass("fi-rr-heart");
+              $(likeBtn).addClass("fi-sr-heart");
+              $(likeDisplaySpan).text(`${data.likes}`);
+            } else {
+              $(likeBtn).removeClass("fi-sr-heart");
+              $(likeBtn).addClass("fi-rr-heart");
+              if (data.likes > 0) {
+                $(likeDisplaySpan).text(`${data.likes}`);
+              } else {
+                $(likeDisplaySpan).text("");
+              }
+            }
+          } else {
+            console.log(data);
+          }
+        });
+      }
+    }
   });
 });

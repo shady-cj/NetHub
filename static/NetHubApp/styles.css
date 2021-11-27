@@ -818,6 +818,15 @@ textarea {
 .post-content .post-info i {
   cursor: pointer;
 }
+
+.like-count,
+.comment-count {
+  margin-left: 6px;
+  transform: translateY(-4px);
+  display: inline-block;
+  font-size: 11px;
+  color: rgb(155, 153, 153);
+}
 .post-content .post-info i.fi-sr-heart {
   color: red;
 }

@@ -35,7 +35,7 @@
                     <div class='post-title'>
                         <span data-author={{post.post_creator.username}} class='post-username authorProfileName'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
                     </div>
-                    <div data-postId='{{post.id}}' class='post-message'>
+                    <div data-postId="{{post.id}}" class='post-message'>
                         {{post.post_content | safe}}
                     </div>
                     <div class='edit-info'>
@@ -46,8 +46,23 @@
                     {% if user.is_authenticated %}
                     <div class='post-info'>
                         <!-- <i class="fi fi-sr-heart"></i> -->
-                        <div><i class="fi fi-rr-heart"></i></div>
-                        <div><i class="fi fi-rr-comment"></i> </div>
+                        <div>
+
+                            {% if request.user in post.liked_by.all %}
+                                <i class="fi fi-sr-heart like-icon"></i>
+                            {% else %}
+                                <i class="fi fi-rr-heart like-icon"></i>
+                            {% endif %}
+                            
+
+                            <span class='like-count'>
+                            {% if post.post_likes > 0 %}
+                                {{post.post_likes}}
+                            {% endif %}
+                            </span>
+                        
+                        </div>
+                        <div><i class="fi fi-rr-comment comment-icon"></i> <span class='comment-count'></span> </div>
                         {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
                         <div><i class="fi bookmark-btn {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
                         <!-- <i class="fi fi-sr-bookmark"></i> -->
@@ -77,7 +92,7 @@
                     <div class='post-title'>
                         <span  data-author={{post.post_creator.username}} class='post-username authorProfileName'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
                     </div>
-                    <div data-postId='{{post.id}}' class='post-message'>
+                    <div data-postId="{{post.id}}" class='post-message'>
                         {{post.post_content | safe}}
                     </div>
                     <div class='edit-info'>
@@ -87,8 +102,22 @@
                     </div>
                     <div class='post-info'>
                         <!-- <i class="fi fi-sr-heart"></i> -->
-                        <div><i class="fi fi-rr-heart"></i></div>
-                        <div><i class="fi fi-rr-comment"></i> </div>
+                        <div>
+                            {% if request.user in post.liked_by.all %}
+                                <i class="fi fi-sr-heart like-icon"></i>
+                            {% else %}
+                                <i class="fi fi-rr-heart like-icon"></i>
+                            {% endif %}
+                            
+
+                            <span class='like-count'>
+                            {% if post.post_likes > 0 %}
+                                {{post.post_likes}}
+                            {% endif %}
+                            </span>
+                            
+                        </div>
+                        <div><i class="fi fi-rr-comment comment-icon"></i> <span class='comment-count'></span> </div>
                         {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
                         <div><i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
                         <!-- <i class="fi fi-sr-bookmark"></i> -->
@@ -223,7 +252,7 @@
                     <div class='post-title'>
                         <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
                     </div>
-                    <div data-postId='{{post.id}}' class='post-message'>
+                    <div data-postId="{{post.id}}" class='post-message'>
                         {{post.post_content | safe}}
                     </div>
                     <div class='edit-info'>
@@ -233,8 +262,21 @@
                     </div>
                     <div class='post-info'>
                         <!-- <i class="fi fi-sr-heart"></i> -->
-                        <div><i class="fi fi-rr-heart"></i></div>
-                        <div><i class="fi fi-rr-comment"></i> </div>
+                        <div>
+                            {% if request.user in post.liked_by.all %}
+                                <i class="fi fi-sr-heart like-icon"></i>
+                            {% else %}
+                                <i class="fi fi-rr-heart like-icon"></i>
+                            {% endif %}
+                            
+
+                            <span class='like-count'>
+                            {% if post.post_likes > 0 %}
+                                {{post.post_likes}}
+                            {% endif %}
+                            </span>
+                        </div>
+                        <div><i class="fi fi-rr-comment comment-icon"></i> <span class='comment-count'></span> </div>
                         {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
                         <div><i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
                         <!-- <i class="fi fi-sr-bookmark"></i> -->
