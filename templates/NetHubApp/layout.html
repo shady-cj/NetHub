@@ -131,6 +131,10 @@
             
             </form>
         </section> 
+        <div class="profile-edit-container hide-edit-info">
+
+        </div>
+         <section class='popup-dark'> </section>
     </section>
 
     {% if user.is_authenticated %}
@@ -153,13 +157,11 @@
         </form>
     </section>
     
-    <section class='popup-dark'> </section>
+   
 
 
 
-    <div class="profile-edit-container hide-edit-info">
-
-    </div>
+    
     <script src="{% static  'NetHubApp/index.js' %}"></script>
 
     {% block script %} {% endblock %}

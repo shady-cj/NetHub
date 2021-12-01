@@ -16,7 +16,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
     addToBookmark(bookmarkBtn);
     $(mobileNewPostBtn).click(function (e) {
       e.preventDefault();
-      $(this).css("background-color", "rgb(30, 30, 30)");
       $(mobileNewPostCon).css("left", "0");
     });
     $(".mobile-back-post-btn").click(function () {
