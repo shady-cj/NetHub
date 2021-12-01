@@ -1,2 +1,2 @@
 # NetHub
-A mini social media app with limited functionality
+A mini single page social media django project with limited functionality
