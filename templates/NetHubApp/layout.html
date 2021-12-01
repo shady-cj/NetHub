@@ -45,7 +45,7 @@
                     </div>
 
                     {% if not user.is_authenticated %}
-                        <nav class="submain-1-flex submain-1-nav">
+                        <nav class="submain-1-flex submain-1-nav submain-1-nav-not-auth">
                             {% block auth-option %}
                                 <a class='submain-1-auth-link' href="{% url 'login' %}"><i class="fi fi-rr-sign-in"></i> SIGN IN</a>
                                 <a class='submain-1-auth-link' href="{% url 'register' %}"><i class="fas fa-address-card"></i>CREATE AN ACCOUNT</a>
@@ -66,7 +66,7 @@
                             <a class='submain-1-nav-link main-logout-link' href="#"><i class="fi fi-rr-sign-out-alt"></i> Logout</a>
                         </nav>
                         <div class="submain-1-flex submain-1-userinfo">
-                            <a href='#55'>
+                            <a href='#'>
                                 <img id='submain-1-userpic' src=" {{user.profile_picture.url}} " alt="">
                             </a>
                             <a class="submain-1-username" href="#" data-username="{{user.username}}" data-userId="{{user.id}}"><h4>{{user.username|title}}</h4></a>
@@ -117,16 +117,30 @@
             </div>
         </div>
         <input id='csrf' type='text' value='{{csrf_token }}' hidden>
-        
-        {% if user.is_authenticated %}
-            <footer>
-                <a class='footer-active' data-footerLink='home' data-footerName= 'Home'  href=""><i class="fas fa-home"></i></a>
-                <a href="" data-footerLink ='following_posts' data-footerName='Following Posts'><i class="fas fa-users"></i></a>
-                <a href="" data-footerLink ='bookmarks' data-footerName='Bookmarks'><i class="fi fi-sr-bookmark"></i></a>
-                <a href="" data-footerLink ='search' data-footerName='Search'><i class="fas fa-search"></i></a>
-            </footer>
-        {% endif %}  
+
+
+
+        <section class='new-post-mobile-container'>
+            <div> <i class="mobile-back-post-btn fas fa-arrow-left"></i> <h1>New Post</div>
+            <form action="{% url 'create_post' %}" method='post'>
+
+                {% csrf_token %}
+                <div placeholder="What's going on buddy?"  class="textarea" contenteditable='true'></div>
+                <input type ='text' class='hidden-post' name='post_content' hidden>
+                <input type="submit" class='new-post-btn btn-inactive' value="Post" disabled>
+            
+            </form>
+        </section> 
     </section>
+
+    {% if user.is_authenticated %}
+        <footer>
+            <a class='footer-active' data-footerLink='home' data-footerName= 'Home'  href=""><i class="fas fa-home"></i></a>
+            <a href="" data-footerLink ='following_posts' data-footerName='Following Posts'><i class="fas fa-users"></i></a>
+            <a href="" data-footerLink ='bookmarks' data-footerName='Bookmarks'><i class="fi fi-sr-bookmark"></i></a>
+            <a href="" data-footerLink ='search' data-footerName='Search'><i class="fas fa-search"></i></a>
+        </footer>
+    {% endif %} 
     <section class='logout-popup'> 
         <h4> Are you Sure You Want Log Out??</h4>
         <form action="{% url 'logout' %}" method='post'>
@@ -138,17 +152,7 @@
             <button type='submit'>Yes, Log me out</button>
         </form>
     </section>
-    <section class='new-post-mobile-container'>
-        <div> <i class="mobile-back-post-btn fas fa-arrow-left"></i> <h1>New Post</div>
-        <form action="{% url 'create_post' %}" method='post'>
-
-            {% csrf_token %}
-            <div placeholder="What's going on buddy?"  class="textarea" contenteditable='true'></div>
-            <input type ='text' class='hidden-post' name='post_content' hidden>
-            <input type="submit" class='new-post-btn btn-inactive' value="Post" disabled>
-        
-        </form>
-    </section>
+    
     <section class='popup-dark'> </section>
 
 

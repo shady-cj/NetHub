@@ -4,7 +4,9 @@
 * {
   box-sizing: border-box;
   font-family: "Asap", sans-serif;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0) !important;
 }
+
 /* width
 ::-webkit-scrollbar {
   width: 20px;
@@ -37,6 +39,7 @@ body {
 }
 
 .main {
+  position: relative;
   display: block;
   height: 100vh;
   overflow: hidden;
@@ -120,13 +123,14 @@ body {
   backdrop-filter: blur(5px);
   top: 0;
   left: -500px;
-  width: 60%;
-  transition: 0.4s ease-in-out;
+  width: 80%;
+  transition: 0.4s linear;
   z-index: 20;
   border-top-right-radius: 18px;
   border-bottom-right-radius: 18px;
 }
 .submain-2 {
+  width: 100%;
   flex-basis: 100%;
   background-image: url(background.jpg);
   background-blend-mode: saturation;
@@ -136,8 +140,6 @@ body {
   background-attachment: fixed;
   overflow: hidden;
   overflow-y: scroll;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .submain-2::-webkit-scrollbar {
@@ -246,7 +248,7 @@ body {
 }
 
 .profile-main-info > div {
-  height: 130px;
+  height: 100px;
 }
 .profile-main-info .profile-pic-con {
   flex-basis: 30%;
@@ -255,8 +257,8 @@ body {
   align-items: center;
 }
 .profile-main-info .profile-pic-con img {
-  height: 110px;
-  width: 110px;
+  height: 80px;
+  width: 80px;
   border-radius: 50%;
 }
 .profile-main-info .profile-info-con {
@@ -278,19 +280,19 @@ body {
   border: 1px solid whitesmoke;
   background-color: transparent;
   color: whitesmoke;
-  padding: 12px 20px;
-  border-radius: 12px;
+  padding: 9px 16px;
+  border-radius: 8px;
   cursor: pointer;
 }
 .profile-main-info .profile-info-con span.profile-info-name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   font-family: "Montserrat", sans-serif;
 }
 .profile-main-info .profile-info-con span.profile-info-username {
   font-family: "Cinzel", serif;
   font-weight: 300;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .profile-more-info .profile-info-about-header {
@@ -410,10 +412,9 @@ body {
   align-items: center;
   flex-basis: 15%;
   padding: 0 20px;
-}
-.img-crop-submain .img-crop-btn {
   color: whitesmoke;
 }
+
 .img-crop-submain .img-crop-btn i {
   display: inline-block;
   width: 30px;
@@ -451,12 +452,12 @@ body {
 }
 
 .edit-profile-header i {
-  font-size: 18px;
+  font-size: 16px;
   display: inline-block;
-  height: 35px;
+  height: 30px;
   text-align: center;
-  line-height: 35px;
-  width: 35px;
+  line-height: 30px;
+  width: 30px;
   transition: 0.3s ease-in;
   cursor: pointer;
   border-radius: 50%;
@@ -467,7 +468,8 @@ body {
 }
 
 .edit-profile-header h1 {
-  margin-left: -120px;
+  margin-left: -70px;
+  font-size: 18px;
 }
 
 .edit-profile-header button {
@@ -693,9 +695,9 @@ textarea {
   border-radius: 10px;
 }
 .follow-info {
-  padding: 6px 14px;
+  padding: 4px 12px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .user-following-btn {
@@ -748,8 +750,8 @@ textarea {
   justify-content: center;
 }
 .post-image img {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
 }
 
@@ -788,7 +790,7 @@ textarea {
 .post-title span.post-username {
   flex-basis: 60%;
 
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -798,7 +800,7 @@ textarea {
   font-style: italic;
   font-weight: 300;
   font-family: "Varela Round", sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   padding-right: 10px;
   color: rgb(177, 161, 161, 0.6);
 }
@@ -806,6 +808,7 @@ textarea {
   word-spacing: 0.4px;
   padding: 3px 4px;
   flex-basis: 40%;
+  font-weight: 300;
 }
 
 .post-content .post-info {
@@ -815,14 +818,38 @@ textarea {
   justify-content: space-between;
   flex-basis: 15%;
 }
+.post-content .post-info div {
+  position: relative;
+}
 .post-content .post-info i {
   cursor: pointer;
 }
 
+.animateLike {
+  font-size: 100%;
+  animation: likeEffect 0.4s linear;
+  animation-fill-mode: both;
+  animation-play-state: paused;
+}
+@keyframes likeEffect {
+  0% {
+    font-size: 100%;
+  }
+  20% {
+    font-size: 75%;
+  }
+  60% {
+    font-size: 125%;
+  }
+  100% {
+    font-size: 100%;
+  }
+}
 .like-count,
 .comment-count {
-  margin-left: 6px;
-  transform: translateY(-4px);
+  position: absolute;
+  top: 3px;
+  left: 22px;
   display: inline-block;
   font-size: 11px;
   color: rgb(155, 153, 153);
@@ -843,7 +870,7 @@ textarea {
 }
 .new-post-mobile-container {
   position: absolute;
-  left: 150%;
+  left: 200%;
   top: 0;
   z-index: 30;
   display: flex;
@@ -852,7 +879,7 @@ textarea {
   height: 100%;
   width: 100%;
   padding: 10px;
-  transition: 0.4s ease-in-out;
+  transition: 0.4s linear;
 }
 
 .new-post-mobile-container > div {
@@ -942,10 +969,11 @@ textarea {
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
-  padding: 10px 20px;
+  padding: 30px 20px 20px;
 }
 .submain-1-container-not-auth {
   justify-content: center !important;
+  align-items: center !important;
 }
 
 .submain-1-container .submain-1-flex {
@@ -993,7 +1021,10 @@ textarea {
   padding: 10px 0 10px 5px;
 }
 .submain-1-flex.submain-1-nav {
-  margin-top: 50px;
+  margin-top: 80px;
+}
+.submain-1-flex.submain-1-nav.submain-1-nav-not-auth {
+  margin-top: 0 !important;
 }
 .submain-1-flex.submain-1-nav .submain-1-nav-link-mobile {
   display: none;
@@ -1046,7 +1077,7 @@ textarea {
 }
 
 footer {
-  position: absolute;
+  position: fixed;
   height: 55px;
   width: 100%;
   bottom: 0;
@@ -1115,7 +1146,7 @@ select:-webkit-autofill:focus {
 }
 div.main-form-container {
   /* padding:10px 50px; */
-  padding: 88px 64px !important;
+  padding: 88px 30px !important;
   color: whitesmoke;
 }
 
@@ -1202,6 +1233,66 @@ form .form-group .form-container div span {
 
 /* REGISTER FORM ENDS */
 
+/* ***********************************8 */
+/* viewport between 400px and 600px  */
+@media only screen and (min-width: 400px) {
+  div.main-form-container {
+    /* padding:10px 50px; */
+    padding: 88px 40px;
+  }
+  .submain-1 {
+    width: 60%;
+  }
+  .submain-1-flex.submain-1-nav {
+    margin-top: 50px;
+  }
+  .profile-main-info .profile-pic-con img {
+    height: 110px;
+    width: 110px;
+  }
+  .profile-main-info .profile-info-con span.profile-info-name {
+    font-size: 20px;
+  }
+  .profile-main-info .profile-info-con span.profile-info-username {
+    font-size: 18px;
+  }
+  #profile-edit-btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+  }
+  .profile-main-info > div {
+    height: 130px;
+  }
+  .follow-info {
+    padding: 6px 14px;
+
+    border-radius: 8px;
+  }
+  .post-image img {
+    width: 60px;
+    height: 60px;
+  }
+  .post-title span.post-username {
+    font-size: 20px;
+  }
+  .post-title span.post-timestamp {
+    font-size: 14px;
+  }
+  .edit-profile-header i {
+    font-size: 18px;
+
+    height: 35px;
+
+    line-height: 35px;
+    width: 35px;
+  }
+  .edit-profile-header h1 {
+    margin-left: -130px;
+    font-size: 20px;
+  }
+}
+
+/* viewport between 600px and 768px  */
 @media only screen and (min-width: 600px) {
   .new-post-mobile-container {
     display: none;

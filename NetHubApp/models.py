@@ -80,7 +80,6 @@ class Post(models.Model):
 		now = datetime.datetime.now(datetime.timezone.utc)
 		timestamp =self.post_date
 		test = timestamp + timezone.timedelta(days=45)
-		print(test)
 		time_difference = now - timestamp
 		if time_difference.days < 1:
 			hours = time_difference.seconds * 0.000277778 

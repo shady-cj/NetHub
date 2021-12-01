@@ -161,7 +161,6 @@ def indexAjax(request,page):
         follow_list=[]
         is_following = False
         authUser = request.user.username
-        print(authUser)
         if page == 'bookmarks':
             posts = [b.post for b in Bookmark.objects.filter(user = request.user).order_by('-id')]
         
@@ -248,9 +247,9 @@ def updateProfile(request,username):
         # print(json.load(request))
         # print(request)
         data = json.load(request)
-        fname = data.get('fname')
-        lname = data.get('lname')
-        new_username = data.get('username').lower()
+        fname = data.get('fname').strip()
+        lname = data.get('lname').strip()
+        new_username = data.get('username').strip().lower()
         about = data.get('bio')
         dob = data.get('dob')
         pics = data.get('pic')

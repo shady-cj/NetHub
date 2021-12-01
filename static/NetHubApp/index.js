@@ -127,24 +127,28 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       $(searchIcon).css("color", "whitesmoke");
     });
 
-    $(hamIcon).click(function () {
-      $(subMain).css("left", "0");
-      setTimeout(function () {
-        $(".blur-main").show();
-        $(".post-content div").css("color", "rgb(90, 88, 88)");
-      }, 200);
+    $(hamIcon)
+      .off("click")
+      .on("click", function () {
+        $(subMain).css("left", "0");
+        setTimeout(function () {
+          $(".blur-main").show();
+          $(".post-content div").css("color", "rgb(90, 88, 88)");
+        }, 200);
 
-      $(document).click(function (e) {
-        var elem = e.target;
-        if ($(subMain).css("left") === "0px") {
-          if (!$(elem).hasClass("submain-1")) {
-            $(subMain).css("left", "-500px");
-            $(".post-content div").css("color", "whitesmoke");
-            $(".blur-main").hide();
-          }
-        }
+        $(document)
+          .off("click")
+          .on("click", function (e) {
+            var elem = e.target;
+            if ($(subMain).css("left") === "0px") {
+              if (!$(elem).is("[class ^='submain-1-container']")) {
+                $(subMain).css("left", "-500px");
+                $(".post-content div").css("color", "whitesmoke");
+                $(".blur-main").hide();
+              }
+            }
+          });
       });
-    });
 
     function addActive(Links, activeLink, attrClass) {
       $.each(Links, function (index, link) {
@@ -510,6 +514,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       if (page === "profile") {
         homeClicked = 0;
         reloadHome = false;
+        homePageOnload = false;
         $(profileView).html("");
         renderProfilePage(
           dataset,
@@ -522,7 +527,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
       } else if (page !== "home") {
         homeClicked = 0;
         reloadHome = false;
-
+        homePageOnload = false;
         formatPost(dataset, empty, false, follow, authUser, user);
       } else {
         if (reloadHome || updatedUserProfile) {
@@ -977,6 +982,20 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
           profileEdited = true;
         });
       });
+      var docWidth = +document.documentElement.clientWidth;
+      var docHeight = +document.documentElement.clientHeight;
+      var boundaryWidth = docWidth < 400 ? 250 : 350;
+      var boundaryHeight = docWidth < 400 ? 150 : 250;
+      window.addEventListener("resize", () => {
+        docWidth = +document.documentElement.clientWidth;
+        docHeight = +document.documentElement.clientHeight;
+        boundaryWidth = docWidth < 400 ? 250 : 350;
+        boundaryHeight = docWidth < 400 ? 150 : 250;
+      });
+
+      if (docHeight < 400) {
+        boundaryHeight = 150;
+      }
       var cropper = $(imageCon).croppie({
         enableOrientation: true,
         enableExif: true,
@@ -986,8 +1005,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
           type: "square",
         },
         boundary: {
-          width: 350,
-          height: 250,
+          width: boundaryWidth,
+          height: boundaryHeight,
         },
       });
 
@@ -1302,13 +1321,28 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         }).done(function (data) {
           if (data.message) {
             let likeDisplaySpan = $(likeBtn).siblings("span.like-count");
+            let postCon = $(likeBtn).closest("div");
             if (data.message === "liked successfully" && status === "like") {
               $(likeBtn).removeClass("fi-rr-heart");
               $(likeBtn).addClass("fi-sr-heart");
+              let fixedWidth = $(postCon).css("width");
+              let fixedHeight = $(postCon).css("height");
+              console.log(fixedHeight, fixedWidth);
+              $(postCon).css({
+                height: `${fixedHeight}`,
+                width: `${fixedWidth}`,
+              });
+              $(likeBtn).addClass("animateLike");
+              $(likeBtn).css("animation-play-state", "running");
+              likeBtn.addEventListener("animationend", function () {
+                $(likeBtn).css("animation-play-state", "paused");
+              });
               $(likeDisplaySpan).text(`${data.likes}`);
             } else {
               $(likeBtn).removeClass("fi-sr-heart");
+
               $(likeBtn).addClass("fi-rr-heart");
+              $(likeBtn).removeClass("animateLike");
               if (data.likes > 0) {
                 $(likeDisplaySpan).text(`${data.likes}`);
               } else {

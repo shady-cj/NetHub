@@ -119,7 +119,9 @@
                         </div>
                         <div><i class="fi fi-rr-comment comment-icon"></i> <span class='comment-count'></span> </div>
                         {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
-                        <div><i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
+                            <div>
+                                <i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> 
+                            </div>
                         <!-- <i class="fi fi-sr-bookmark"></i> -->
                     </div>
                 </div>

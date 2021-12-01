@@ -10,7 +10,7 @@ function focusEffect(field, inputSpan, onFocus) {
     lColor = coLor;
   } else {
     if ($(field).val().trim().length > 0) {
-      var black = "black";
+      var black = "gray";
       coLor = "rgb(83, 81, 81,0.6)";
       lColor = black;
       sColor = black;
