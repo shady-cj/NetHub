@@ -290,6 +290,7 @@ def updateProfile(request,username):
             getUser.about= about
             getUser.Date_of_Birth = dob
             getUser.save()
+            print(getUser.Date_of_Birth)
 
 
             if pics != None:

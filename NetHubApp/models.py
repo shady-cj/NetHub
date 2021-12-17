@@ -93,6 +93,9 @@ class Post(models.Model):
 			elif minutes < 60 and minutes >= 1 :
 				return f'{round(minutes)} minute{self.verbose_time_plural(round(minutes))} ago'
 
+			elif seconds == 0:
+				return 'Now'
+
 			else:
 				return f'{round(seconds)} second{self.verbose_time_plural(round(seconds))} ago'
 
