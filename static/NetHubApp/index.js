@@ -8,6 +8,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         var searchField = $(searchForm).find("input");
         var searchIcon = $(searchForm).find("button");
         var newPostTextarea = $(".textarea");
+
         var mobileNewPostBtn = $(".new-post-mobile-btn");
         var mobileNewPostCon = $(".new-post-mobile-container");
         var bookmarkBtn = $(
@@ -18,28 +19,118 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             e.preventDefault();
             $(mobileNewPostCon).css("left", "0");
         });
-        $(".mobile-back-post-btn").click(function () {
+        $(".mobile-back-post-btn").on("click", function () {
             $(mobileNewPostCon).css("left", "150%");
         });
-        console.log(newPostTextarea);
         $(newPostTextarea).each(function (index, textArea) {
             var hiddenPost = $(textArea).siblings(".hidden-post");
             var newPostBtn = $(textArea).siblings(".new-post-btn");
             enablePostBtn(textArea, hiddenPost, newPostBtn);
+
+            addNewPost(
+                $(textArea).closest("form"),
+                $(hiddenPost),
+                textArea,
+                newPostBtn
+            );
         });
 
         function enablePostBtn(newPostTextarea, hiddenPost, newPostBtn) {
-            $(newPostTextarea).keyup(function () {
+            $(newPostTextarea).on("keyup", function () {
                 var content = $(newPostTextarea).html();
+
                 $(hiddenPost).val(content);
-                if ($(hiddenPost).val().length > 0) {
+
+                if ($(newPostTextarea).text().trim().length > 0) {
                     $(newPostBtn).attr("disabled", false);
                     $(newPostBtn).removeClass("btn-inactive");
-                    console.log(newPostBtn);
                 } else {
                     $(newPostBtn).attr("disabled", true);
                     $(newPostBtn).addClass("btn-inactive");
                 }
+            });
+        }
+
+        // rendering text inside of contenteditable div
+        // function renderToText(content) {
+        //     div = $(content);
+        //     if (div.innerText) {
+        //         text = div.innerText;
+        //     } else {
+        //         escapedText = $(div)
+        //             .html()
+        //             .replace(/(?:\r\<br\>|\r|\<br\>)/g, "\n")
+        //             .replace(/(\<([^\>]+)\>)/gi, "");
+        //         text = decodeURIComponent(escapedText);
+        //     }
+        //     console.log(text);
+        //     return text;
+        // }
+
+        // Adding new post asynchronously
+
+        function addNewPost(form, inputContent, textDiv, postBtn) {
+            $(form).on("submit", function (e) {
+                e.preventDefault();
+                let url = $(form).attr("action");
+                payload = JSON.stringify({
+                    post_content: $(inputContent).val(),
+                    post_image: null,
+                });
+                let token = $("#csrf").val();
+                console.log($(inputContent).val());
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    dataType: "json",
+                    data: payload,
+                    headers: {
+                        "X-CSRFToken": token,
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                }).done((data) => {
+                    if (data.message) {
+                        console.log(data.message);
+                        $(textDiv).html("");
+                        $(inputContent).val("");
+                        $(postBtn).attr("disabled", true);
+                        let template = postTemplate(
+                            data.postInfo,
+                            null,
+                            false,
+                            data.postUser
+                        );
+                        let postCon = $("<div>");
+                        $(postCon).addClass("post-container");
+                        $(postCon).addClass("viewProfilerContainer");
+                        $(postCon).html(template);
+                        $(postCon).css({
+                            height: "0px",
+                            minHeight: "0px",
+                            overflow: "hidden",
+                            marginTop: 0,
+                            paddingTop: 0,
+                        });
+                        $(postCon).attr("data-postId", data.postInfo.id);
+                        $(postCon).addClass("animateNewPost");
+
+                        $(postCon).insertAfter(".new-post-container");
+
+                        setTimeout(() => {
+                            $(postCon).css({
+                                height: "auto",
+                                minHeight: "120px",
+                                marginTop: "8px",
+                                paddingTop: "9px",
+                            });
+                            $(postCon).removeClass("animateNewPost");
+                        }, 1000);
+                        editEvent($(postCon).find(".fi-rr-pencil"));
+                        addToBookmark($(postCon).find(".bookmark-btn"));
+                        addEventToLikeBtns(postCon);
+                        addEventToCommentBtns(postCon);
+                    }
+                });
             });
         }
 
@@ -581,8 +672,15 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     $(followSection).html("");
                     let follow_btn, followBtnTemplate;
                     $(dataset).each(function (index, followInfo) {
-                        if (followInfo.username.toLowerCase() !== authUser) {
-                            if (followInfo.followers.includes(authUser)) {
+                        if (
+                            followInfo.username.toLowerCase() !==
+                            authUser.username.toLowerCase()
+                        ) {
+                            if (
+                                followInfo.followers.includes(
+                                    authUser.username.toLowerCase()
+                                )
+                            ) {
                                 follow_btn = `<button data-followFor='followPage' class= 'follow-info user-following-btn'>Following</button>`;
                             } else {
                                 follow_btn = `<button data-followFor='followPage' class='follow-info user-not-following-btn'>Follow</button>`;
@@ -654,6 +752,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     editEvent($(view).find(".fi-rr-pencil"));
                     addToBookmark($(view).find(".bookmark-btn"));
                     addEventToLikeBtns($(view).find(".post-container"));
+                    addEventToCommentBtns($(view).find(".post-container"));
+
                     postToProfileEventHandler(
                         $(view).find(".viewProfilerContainer")
                     );
@@ -672,10 +772,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(profileView).scrollTop(0);
 
             let dispBtn;
-            if (user.username.toLowerCase() === authUser) {
+            if (
+                user.username.toLowerCase() === authUser.username.toLowerCase()
+            ) {
                 dispBtn = `<button id='profile-edit-btn'>Edit Profile</button></div>`;
             } else {
-                if (user.followers.includes(authUser)) {
+                if (user.followers.includes(authUser.username.toLowerCase())) {
                     dispBtn = `<button data-followFor='profilePage' class= 'follow-info user-following-btn'>Following</button>`;
                 } else {
                     dispBtn = `<button data-followFor='profilePage' class='follow-info user-not-following-btn'>Follow</button>`;
@@ -755,6 +857,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(profileView).append(profileSection);
             editEvent($(profileView).find(".fi-rr-pencil"));
             addEventToLikeBtns($(profileView).find(".post-container"));
+            addEventToCommentBtns($(profileView).find(".post-container"));
         }
 
         function postTemplate(post, user, forProfile, authUser) {
@@ -767,20 +870,24 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 +post["post_comment_number"] > 0
                     ? +post["post_comment_number"]
                     : "";
+
             if (!forProfile) {
                 authorImage = "class = 'authorProfileImage'";
                 authorName = "authorProfileName";
-                dataAuthor = `data-author=${post.post_creator_username.toLowerCase()}`;
+                dataAuthor = `data-author=${post[
+                    "post_creator_username"
+                ].toLowerCase()}`;
             }
-            if (user.bookmarks.includes(post.id)) {
+            if (authUser.bookmarks.includes(post.id)) {
                 bookmarkClass = "fi-sr-bookmark";
             } else {
                 bookmarkClass = "fi-rr-bookmark";
             }
 
             const checkLike = post["liked_by"].find((item) => {
-                return item.username === authUser;
+                return item.username === authUser.username.toLowerCase();
             });
+
             if (checkLike) {
                 likeBtnTemp = `<i class="fi fi-sr-heart like-icon"></i> `;
             } else {
@@ -1349,6 +1456,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         // Handling like features here, like and unliking posts with display of like counts
         addEventToLikeBtns($(".post-container"));
+        addEventToCommentBtns($(".post-container"));
 
         // adding event listeners to the like icons and getting post id
 
@@ -1439,6 +1547,175 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     }
                 });
             }
+        }
+
+        // Add events to like icons and getting postIds
+
+        function addEventToCommentBtns(elems) {
+            $(elems).each(function (index, elem) {
+                $(elem)
+                    .find("i.comment-icon")
+                    .off("click")
+                    .on("click", function (e) {
+                        e.stopPropagation();
+                        let targ = e.target;
+                        let postCon = $(targ).closest(".post-container");
+                        let postId = $(postCon).attr("data-postId");
+                        let postUsername = $(postCon)
+                            .find(".post-username")
+                            .html();
+                        let postInfo = {
+                            id: postId,
+                            authUserPic: $("#submain-1-userpic").attr("src"),
+                            profPic: $(postCon).find("img").attr("src"),
+                            postUsername: postUsername,
+                            postDate: $(postCon).find(".post-timestamp").html(),
+                            replyMessage:
+                                postUsername ===
+                                $(".submain-1-username h4").text().trim()
+                                    ? "Add another Post"
+                                    : `Replying to <em>${postUsername}</em>`,
+                            postMessage: $(postCon)
+                                .find(".post-message")
+                                .html(),
+                        };
+                        console.log(postInfo);
+                        handleCommentFunctionality(postId, postInfo, postCon);
+                    });
+            });
+        }
+
+        // handle comment functionality after the comment button is clicked
+        let modalOpen = false;
+        function handleCommentFunctionality(postId, postInfo, postCon) {
+            modalOpen = true;
+            let mediaQ = window.matchMedia("(min-width: 600px)");
+            adjustCommentBox(mediaQ);
+            mediaQ.onchange = () => {
+                adjustCommentBox(mediaQ);
+            };
+            $(".comment-box-popup").html(commentBoxTemplate(postInfo));
+            $(".comment-box-popup")
+                .find("i.fa-times")
+                .off("click")
+                .on("click", function () {
+                    $(".popup-dark").hide();
+                    $(".comment-box-popup").hide();
+                    modalOpen = false;
+                });
+            let btn = $(".comment-box-popup").find("button");
+            let formDiv = $(".comment-box-popup").find(
+                "div[contenteditable=true]"
+            );
+            $(formDiv).focus();
+            $(formDiv).on("keyup", function () {
+                $("#commentInputForDiv").val($(this).html());
+                if ($(this).text().trim().length > 0) {
+                    $(btn).prop("disabled", false);
+                } else {
+                    $(btn).prop("disabled", true);
+                }
+            });
+
+            $(btn)
+                .off("click")
+                .on("click", function () {
+                    let token = $("#csrf").val();
+                    // make request to the backend to store the comment made
+                    console.log($("#commentInputForDiv").val());
+                    console.log($(formDiv).html());
+                    $.ajax({
+                        url: "/handle_comments",
+                        type: "PUT",
+                        dataType: "json",
+                        data: JSON.stringify({
+                            postId: postId,
+                            message: $("#commentInputForDiv").val(),
+                        }),
+                        headers: {
+                            "X-CSRFToken": token,
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                    }).done((data) => {
+                        if (data.message) {
+                            $(".popup-dark").hide();
+                            $(".comment-box-popup").hide();
+                            modalOpen = false;
+                            let commentSpan = $(postCon).find(".comment-count");
+                            setTimeout(() => {
+                                $(commentSpan).text(data.commentNum);
+
+                                $(commentSpan).addClass("like-count-animate");
+
+                                setTimeout(() => {
+                                    $(commentSpan).removeClass(
+                                        "like-count-animate"
+                                    );
+                                }, 420);
+                            }, 1000);
+                        }
+                    });
+                });
+        }
+
+        // adjust comment box popup based on the media query
+
+        function adjustCommentBox(mediaQ) {
+            if (modalOpen) {
+                if (mediaQ.matches) {
+                    $(".popup-dark").show();
+                    $(".comment-box-popup").show();
+                } else {
+                    $(".comment-box-popup").show();
+                    $(".popup-dark").hide();
+                }
+            } else {
+                $(".comment-box-popup").hide();
+                $(".popup-dark").hide();
+            }
+        }
+        // the comment box template that is being displayed in the comment box when it is opened...
+        function commentBoxTemplate(postInfo) {
+            let commentBox = `
+                <div class= 'commentBox'>
+                    <div class='cancel-comment'>
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class='comment-post'>
+
+                        <div class='post-container comment-box-container' data-postId="${postInfo.id}">
+                            <div class='post-image'>
+                                <img src='${postInfo.profPic}' alt="">
+                            </div>
+                            <div class='post-content'>
+                                <div class='post-title'>
+                                    <span class='post-username'>${postInfo.postUsername}</span> 
+                                    <span class='post-timestamp'>${postInfo.postDate}</span>
+                                    </div>
+                            <div class='post-message'>
+                                ${postInfo.postMessage}
+                            </div>
+                    
+                        </div>
+                        
+                    </div>
+                    <section>
+                        ${postInfo.replyMessage}
+                    </section>
+                    <div class ='comment-content'>
+                        <img src=${postInfo.authUserPic}>
+                        <div contenteditable='true' placeholder='Post your reply'></div>
+                        <input type='text' id='commentInputForDiv' hidden></input>
+                        
+                    </div>
+                    <div class='comment-btn'>
+                        <button disabled>Reply</button>
+                    </div>
+
+                </div>
+            
+            `;
+            return commentBox;
         }
     });
 });

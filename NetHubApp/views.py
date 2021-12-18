@@ -67,7 +67,7 @@ def index(request,page='home'):
             "posts": posts.order_by("-post_date").all(),
             "page":page_name,
         })
-
+@login_required
 def UsersInfoPage(request,username,page):
     if request.user.is_authenticated:
         
@@ -135,7 +135,7 @@ def UsersInfoPage(request,username,page):
 
     else:
         return HttpResponseRedirect(reverse("index", args=('home',) ))
-
+@login_required
 def indexAjax(request,page):
     posts = Post.objects.all().order_by("-post_date").all()
     allowed_pages = ['home','bookmarks','following_posts','following','followers','profile']
@@ -160,7 +160,7 @@ def indexAjax(request,page):
         follow = None
         follow_list=[]
         is_following = False
-        authUser = request.user.username
+        authUser = request.user
         if page == 'bookmarks':
             posts = [b.post for b in Bookmark.objects.filter(user = request.user).order_by('-id')]
         
@@ -191,7 +191,7 @@ def indexAjax(request,page):
                 'posts':[post.serialize() for post in posts],
                 'follow':follow_list,
                 'is_following':is_following,
-                'authUser':authUser,
+                'authUser':authUser.serialize(),
                 'user':getuser.serialize(),
                 'numfollowers':num_followers,
                 'numfollowing':num_following,
@@ -203,7 +203,7 @@ def indexAjax(request,page):
     else:
         return  JsonResponse({'error':'error'})
 
-
+@login_required
 def getUserInfo(request):
     try:
         username = request.GET.get('username').strip().lower()
@@ -213,19 +213,26 @@ def getUserInfo(request):
 
     return JsonResponse({'user':getUser.serialize()})
 
-    
+@login_required  
 def create_post(request,):
-    if request.method == "POST":
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if request.method == "POST" and is_ajax:
+        data = json.load(request)
         post_creator_id = request.user.id
-        post_content = request.POST["post_content"]
-        post_image = request.FILES.get("post_image")
+        post_content = data.get("post_content")
+        post_image = data.get("post_image")
         post_user = User.objects.get(id=int(post_creator_id))
-        Post.objects.create(post_creator = post_user, post_content=post_content, post_image=post_image)
-        return HttpResponseRedirect(reverse("index", args=('home',) ))
+        post_info = Post.objects.create(post_creator = post_user, post_content=post_content, post_image=post_image)
+       
+        return JsonResponse({
+            'message':'post created successfully',
+            'postInfo':post_info.serialize(),
+            'postUser':post_user.serialize()
+        })
     else:
 
-        raise Http404('wrong url')
-
+        return JsonResponse({'message':'An error occured.. wrong request'})
+@login_required
 def edit_post(request,post_id):
     if request.method == "POST":
         post = get_object_or_404(Post,pk=post_id)
@@ -238,7 +245,7 @@ def edit_post(request,post_id):
     else:
         raise Http404('wrong url')
 
-
+@login_required
 def updateProfile(request,username):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
@@ -312,7 +319,7 @@ def updateProfile(request,username):
         num_followers =  getUser.followers.all().count()
         num_following = getfollow.following.all().count()
         users_posts = getUser.posts.all().order_by("-post_date").all()
-        authUser = request.user.username
+        authUser = request.user.serialize()
         return JsonResponse(
             {
                 'user':getUser.serialize(),
@@ -323,7 +330,7 @@ def updateProfile(request,username):
             }
         )
 
-
+@login_required
 def handleFollow(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
@@ -359,7 +366,7 @@ def handleFollow(request):
 
 
 
-
+@login_required
 def BookmarkPost(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax and request.method == 'PUT':
@@ -391,7 +398,7 @@ def BookmarkPost(request):
         getUser.save()
         return JsonResponse({'message':message})
         
-
+@login_required
 def handleLike(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
@@ -422,6 +429,26 @@ def handleLike(request):
 
         return JsonResponse({'message':message, 'likes':getPost.post_likes})
 
+@login_required
+def handleComments(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax and request.method == 'PUT':
+        data = json.load(request)
+        post_id = data.get('postId')
+        comment_message = data.get('message')
+        
+        try:
+            getPost = Post.objects.get(id= int(post_id))
+        except Post.DoesNotExist:
+            return JsonResponse({'error':'No post of such id'})
+
+        comment= Comment.objects.create(comment_user =request.user,comment_content=comment_message )
+
+        getPost.post_comment.add(comment)
+
+        return JsonResponse({'message':'comment made successfully', 'commentNum':getPost.post_comment.all().count()})
+
+        
 
 
 def login_view(request):    
