@@ -20,7 +20,19 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(mobileNewPostCon).css("left", "0");
         });
         $(".mobile-back-post-btn").on("click", function () {
-            $(mobileNewPostCon).css("left", "150%");
+            let mobileTextDiv = $(".new-post-mobile-container .textarea");
+            if ($(mobileTextDiv).text().length > 0) {
+                let text = "Do you want to discard the changes";
+                if (confirm(text) === true) {
+                    mobileNewPostCon.css("left", "150%");
+                    $(mobileTextDiv).text("");
+                } else {
+                    alert("<h1>Alrighty, then continue editing</h1>");
+                }
+            } else {
+                mobileNewPostCon.css("left", "150%");
+                $(mobileTextDiv).text("");
+            }
         });
         $(newPostTextarea).each(function (index, textArea) {
             var hiddenPost = $(textArea).siblings(".hidden-post");
@@ -77,8 +89,10 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     post_content: $(inputContent).val(),
                     post_image: null,
                 });
+                mobileNewPostCon.css("left", "150%");
+
                 let token = $("#csrf").val();
-                console.log($(inputContent).val());
+
                 $.ajax({
                     url: url,
                     type: "POST",
@@ -90,7 +104,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     },
                 }).done((data) => {
                     if (data.message) {
-                        console.log(data.message);
                         $(textDiv).html("");
                         $(inputContent).val("");
                         $(postBtn).attr("disabled", true);
