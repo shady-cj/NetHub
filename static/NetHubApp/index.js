@@ -27,7 +27,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     mobileNewPostCon.css("left", "150%");
                     $(mobileTextDiv).text("");
                 } else {
-                    alert("<h1>Alrighty, then continue editing</h1>");
+                    alert("Alrighty, then continue editing");
                 }
             } else {
                 mobileNewPostCon.css("left", "150%");
