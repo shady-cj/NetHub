@@ -24,7 +24,7 @@ def index(request,page='home'):
     posts = Post.objects.all()
     page_name =page.replace('_',' ').upper()
     if request.user.is_authenticated:
-        allowed_pages = ['home','bookmarks','following_posts']
+        allowed_pages = ['home','bookmarks','following_posts','discussion']
 
         if page not in allowed_pages:
             raise Http404
@@ -35,6 +35,7 @@ def index(request,page='home'):
                 request.user.profile_picture = 'user_images/default.png'
                 request.user.save()
             custom_posts= None
+            discussion = None
             
             if page == 'following_posts':
             
@@ -50,13 +51,17 @@ def index(request,page='home'):
             elif page == 'bookmarks':
                 custom_posts = [b.post for b in Bookmark.objects.filter(user = request.user).order_by('-id')]
 
-
-            
+            elif page == 'discussion':
+                discussion = {
+                    'user':request.session['currentUser'],
+                    'post':request.session['postId'] 
+                }
             return render(request, "NetHubApp/index.html",{
                 "posts":posts.order_by("-post_date").all(),
                 "custom_posts":custom_posts,
                 "page":page_name,
-                "follow":None
+                "follow":None,
+                'discussion':discussion
             
             })
             
@@ -67,6 +72,20 @@ def index(request,page='home'):
             "posts": posts.order_by("-post_date").all(),
             "page":page_name,
         })
+
+@login_required 
+def discussionPage(request,username,postId):
+    try:
+        post = Post.objects.get(id = int(postId))
+        user = User.objects.get(username = username.lower().strip())
+        print(post, user)
+        if post and user:
+            request.session['currentUser'] = user.username
+            request.session['postId'] = post.id
+            return HttpResponseRedirect(reverse('index', args=('discussion',)))
+    except:
+        raise Http404('page not found')
+
 @login_required
 def UsersInfoPage(request,username,page):
     if request.user.is_authenticated:
@@ -375,9 +394,12 @@ def BookmarkPost(request):
         user = data.get('username')
         postId = data.get('postId')
         status = data.get('status')
+
         try:
+          
             getUser= User.objects.get(username= user)
             getPost = Post.objects.get(id=postId)
+          
         except User.DoesNotExist:
             return JsonResponse({'error':'No User With the Username'})
         except Post.DoesNotExist:
@@ -413,7 +435,7 @@ def handleLike(request):
             return JsonResponse({'error':'No post of such id'})
 
         if status == 'like':
-            print(getPost.liked_by.all(), request.user)
+           
             if request.user not in getPost.liked_by.all():
                 getPost.liked_by.add(request.user)
                 getPost.post_likes +=1
@@ -427,7 +449,7 @@ def handleLike(request):
                 getPost.save()
                 message = 'unliked successfully'
 
-        return JsonResponse({'message':message, 'likes':getPost.post_likes})
+        return JsonResponse({'message':message, 'likes':getPost.post_likes,'posts':getPost.serialize()})
 
 @login_required
 def handleComments(request):
@@ -449,6 +471,19 @@ def handleComments(request):
         return JsonResponse({'message':'comment made successfully', 'commentNum':getPost.post_comment.all().count()})
 
         
+@login_required
+def comment_page(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax and request.method == 'POST':
+        data =json.load(request)
+        post_id = data.get('postId')
+        try:
+            getPost = Post.objects.get(id= int(post_id))
+        except  Post.DoesNotExist:
+            return JsonResponse({'error':'an error occured'})
+     
+
+        return JsonResponse({'postInfo':getPost.serialize(),'user':request.user.serialize()})
 
 
 def login_view(request):    

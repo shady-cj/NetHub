@@ -49,9 +49,9 @@
                         <div>
 
                             {% if request.user in post.liked_by.all %}
-                                <i class="fi fi-sr-heart like-icon"></i>
+                                <i data-postPk = {{post.id}} class="fi fi-sr-heart like-icon"></i>
                             {% else %}
-                                <i class="fi fi-rr-heart like-icon"></i>
+                                <i data-postPk = {{post.id}} class="fi fi-rr-heart like-icon"></i>
                             {% endif %}
                             
 
@@ -63,15 +63,15 @@
                         
                         </div>
                         <div>
-                            <i class="fi fi-rr-comment comment-icon"></i> 
+                            <i data-postPk = {{post.id}} class="fi fi-rr-comment comment-icon"></i> 
                             <span class='comment-count'>
                                 {% if post.post_comment.count > 0 %}
                                     {{post.post_comment.count}}
                                 {% endif %}
                             </span> 
                         </div>
-                        {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
-                        <div><i class="fi bookmark-btn {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
+                        {% if user.id == post.post_creator.id %}<div><i data-postPk = {{post.id}} class="fi fi-rr-pencil"></i></div>{% endif %}
+                        <div><i data-postPk = {{post.id}} class="fi bookmark-btn {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
                         <!-- <i class="fi fi-sr-bookmark"></i> -->
                     </div>
                     {% endif %}
@@ -111,9 +111,9 @@
                         <!-- <i class="fi fi-sr-heart"></i> -->
                         <div>
                             {% if request.user in post.liked_by.all %}
-                                <i class="fi fi-sr-heart like-icon"></i>
+                                <i data-postPk = {{post.id}} class="fi fi-sr-heart like-icon"></i>
                             {% else %}
-                                <i class="fi fi-rr-heart like-icon"></i>
+                                <i data-postPk = {{post.id}} class="fi fi-rr-heart like-icon"></i>
                             {% endif %}
                             
 
@@ -125,16 +125,16 @@
                             
                         </div>
                         <div>
-                            <i class="fi fi-rr-comment comment-icon"></i> 
+                            <i data-postPk = {{post.id}} class="fi fi-rr-comment comment-icon"></i> 
                             <span class='comment-count'>
                                 {% if post.post_comment.count > 0 %}
                                     {{post.post_comment.count}}
                                 {% endif %}
                             </span>
                         </div>
-                        {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
+                        {% if user.id == post.post_creator.id %}<div><i data-postPk = {{post.id}} class="fi fi-rr-pencil"></i></div>{% endif %}
                             <div>
-                                <i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> 
+                                <i data-postPk = {{post.id}} class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> 
                             </div>
                         <!-- <i class="fi fi-sr-bookmark"></i> -->
                     </div>
@@ -280,9 +280,9 @@
                         <!-- <i class="fi fi-sr-heart"></i> -->
                         <div>
                             {% if request.user in post.liked_by.all %}
-                                <i class="fi fi-sr-heart like-icon"></i>
+                                <i data-postPk = {{post.id}} class="fi fi-sr-heart like-icon"></i>
                             {% else %}
-                                <i class="fi fi-rr-heart like-icon"></i>
+                                <i data-postPk = {{post.id}} class="fi fi-rr-heart like-icon"></i>
                             {% endif %}
                             
 
@@ -293,15 +293,15 @@
                             </span>
                         </div>
                         <div>
-                            <i class="fi fi-rr-comment comment-icon"></i> 
+                            <i data-postPk = {{post.id}} class="fi fi-rr-comment comment-icon"></i> 
                             <span class='comment-count'>
                                 {% if post.post_comment.count > 0 %}
                                     {{post.post_comment.count}}
                                 {% endif %}
                             </span>
                         </div>
-                        {% if user.id == post.post_creator.id %}<div><i class="fi fi-rr-pencil"></i></div>{% endif %}
-                        <div><i class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
+                        {% if user.id == post.post_creator.id %}<div><i data-postPk = {{post.id}} class="fi fi-rr-pencil"></i></div>{% endif %}
+                        <div><i data-postPk = {{post.id}} class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
                         <!-- <i class="fi fi-sr-bookmark"></i> -->
                     </div>
                 </div>
@@ -312,6 +312,71 @@
             {% endfor %}
         </section>
     </div>
-   
+
+    {% if discussion is not None %}
+        <span id='discussionSpan' data-discussionUser="{{ discussion.user}}" data-discussionId = "{{ discussion.post}}" style='display:none'></span>
+    {% endif %}
+    <section class="discussion-wrapper post-overlay">
+            <div class="discussion-header-container">
+                <i title='back'>
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="r-4qtqp9 r-yyyyoo r-z80fyv r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-19wmn03" style="color: whitesmoke;" ><g><path d="M20 11H7.414l4.293-4.293c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0l-6 6c-.39.39-.39 1.023 0 1.414l6 6c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L7.414 13H20c.553 0 1-.447 1-1s-.447-1-1-1z"></path></g></svg>
+                </i>
+                <h1>Discussion</h1>
+            </div>
+            <div class="discussion-body-container">
+                <div class="discussion-post-info">
+                    <div class="discussion-post-info-profPic">
+                        <img src="logo.jpg" alt="" />
+                    </div>
+                    <div class="discussion-post-info-username">
+                        <span id='discussion-post-username'> </span>
+                    </div>
+                </div>
+                <div class="discussion-post-message">
+                  
+                </div>
+                <div class='edit-info'>
+                        
+                        <i class="far fa-window-close"></i>
+                        <i class="fas fa-save"></i>
+                    </div>
+                <div class="discussion-post-timestamp">
+                   
+                </div>
+                <div class="discussion-post-interactions">
+                    
+                </div>
+                <div class="discussion-post-interaction-btn">
+                    
+                </div>
+            </div>
+            <div class="discussion-reply-container">
+                <div class="discussion-reply-subcontainer">
+                    <div class="reply-info">Replying to <em>Username</em></div>
+                    <div class="reply-container">
+                        <div class="reply-user-image">
+                            <img src="logo.jpg" alt="" />
+                        </div>
+                        <div class="reply-editable-container">
+                            <div class="reply-editable">
+                                <div
+                                    placeholder="Write Your Reply"
+                                    contenteditable="true"
+                                ></div>
+                                <input id='reply-editable-input' type='text' hidden>
+                            </div>
+                            <div class="reply-accessories">
+                                <button disabled>Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="comment-posted-container">
+
+             </div>
+
+        </section>
 
 {% endblock %}

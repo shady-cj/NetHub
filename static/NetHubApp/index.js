@@ -142,6 +142,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         addToBookmark($(postCon).find(".bookmark-btn"));
                         addEventToLikeBtns(postCon);
                         addEventToCommentBtns(postCon);
+                        displayDiscussion($(postCon));
                     }
                 });
             });
@@ -152,8 +153,10 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         // })
 
         $.each(footerLinks, function (index, link) {
-            $(link).click(function (e) {
+            $(link).on("click", function (e) {
                 e.preventDefault();
+                $("header").show();
+
                 var page = $(this).attr("data-footerLink");
                 console.log(page);
                 var historyTitle = $(this).attr("data-footerName");
@@ -172,17 +175,34 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         editEvent(editBtnIcon);
 
         // clicking on edit button
-        function editEvent(editBtn) {
+        function editEvent(editBtn, discussionID = null) {
             $.each(editBtn, function (index, btn) {
-                var postMessage = $(btn)
-                    .parent()
-                    .parent()
-                    .siblings(".post-message");
-                var editBtnInfo = $(postMessage).siblings(".edit-info");
-                $(btn).click(function () {
+                let postMessage;
+                let editBtnInfo;
+                if (discussionID === null) {
+                    postMessage = $(btn)
+                        .parent()
+                        .parent()
+                        .siblings(".post-message");
+                    editBtnInfo = $(postMessage).siblings(".edit-info");
+                } else {
+                    postMessage = $(btn)
+                        .parent()
+                        .parent()
+                        .siblings(".discussion-post-message");
+                    editBtnInfo = $(postMessage).siblings(".edit-info");
+                }
+
+                $(btn).click(function (e) {
+                    e.stopPropagation();
                     var iContent = $(postMessage).html();
                     $(postMessage).attr("contenteditable", "true");
+
                     $(postMessage).focus();
+                    $(postMessage).on("click", function (e) {
+                        if ($(postMessage).attr("contenteditable") === "true")
+                            e.stopPropagation();
+                    });
 
                     document.execCommand("selectAll", false, null);
                     document.getSelection().collapseToEnd();
@@ -190,29 +210,63 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     $(editBtnInfo).show(function () {
                         var closeBtn = $(editBtnInfo).find("i");
                         $(closeBtn).each(function (index, eachbtn) {
-                            $(eachbtn).click(function () {
-                                $(postMessage).attr("contenteditable", "false");
-                                $(editBtnInfo).hide(200);
-                                var postId = $(postMessage).attr("data-postId");
-                                var token = $("#csrf").val();
+                            $(eachbtn)
+                                .off("click")
+                                .on("click", function (e) {
+                                    e.stopPropagation();
+                                    $(postMessage).attr(
+                                        "contenteditable",
+                                        "false"
+                                    );
+                                    $(editBtnInfo).hide(200);
+                                    let postId;
+                                    if (discussionID === null) {
+                                        postId =
+                                            $(postMessage).attr("data-postId");
+                                    } else {
+                                        postId = discussionID;
+                                    }
+                                    var token = $("#csrf").val();
 
-                                if ($(eachbtn).hasClass("fa-save")) {
-                                    $.ajax({
-                                        type: "POST",
-                                        url: `/edit_post/${postId}`,
-                                        dataType: "json",
-                                        data: {
-                                            post_content: $(postMessage).html(),
-                                        },
-                                        // contentType: 'application/json',
-                                        headers: { "X-CSRFToken": token },
-                                    }).done(function (result) {
-                                        console.log(result.edited);
-                                    });
-                                } else {
-                                    $(postMessage).html(iContent);
-                                }
-                            });
+                                    if ($(eachbtn).hasClass("fa-save")) {
+                                        $.ajax({
+                                            type: "POST",
+                                            url: `/edit_post/${postId}`,
+                                            dataType: "json",
+                                            data: {
+                                                post_content:
+                                                    $(postMessage).html(),
+                                            },
+                                            // contentType: 'application/json',
+                                            headers: { "X-CSRFToken": token },
+                                        }).done(function (result) {
+                                            console.log(result.edited);
+                                            $(".fi-rr-pencil").each(
+                                                (index, icon) => {
+                                                    if (
+                                                        +$(icon).attr(
+                                                            "data-postPk"
+                                                        ) === postId
+                                                    ) {
+                                                        $(icon)
+                                                            .parent()
+                                                            .parent()
+                                                            .siblings(
+                                                                ".post-message"
+                                                            )
+                                                            .html(
+                                                                $(
+                                                                    postMessage
+                                                                ).html()
+                                                            );
+                                                    }
+                                                }
+                                            );
+                                        });
+                                    } else {
+                                        $(postMessage).html(iContent);
+                                    }
+                                });
                         });
                     });
                 });
@@ -356,6 +410,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         var updatedUserProfile = false;
         homePageOnload = activeUrl.trim() !== "Home" ? false : true;
 
+        if (activeUrl.trim() === "Discussion") {
+            let discussionId = $("#discussionSpan").attr("data-discussionId");
+            $(headerTitle).text("Home");
+            discussionAjax(discussionId);
+        }
         if (
             activeUrl.trim() === "Following" ||
             activeUrl.trim() === "Followers"
@@ -491,6 +550,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
             $(navLink).on("click", function (e) {
                 e.preventDefault();
+                $("header").show();
                 var page = $(this).attr("data-link");
                 var historyTitle = $(this).text();
                 isMainUser = true;
@@ -583,7 +643,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(activeView).show();
         }
 
-        function pushHistoryState(page, emptyMessage) {
+        function pushHistoryState(page, emptyMessage, discussionInfo = null) {
             infoPages = ["followers", "following", "profile"];
             let user = isMainUser ? targetUser : clickedUser;
             if (infoPages.includes(page)) {
@@ -591,6 +651,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     { page: page, emptyMessage: emptyMessage },
                     null,
                     `/${user}/${page}`
+                );
+            } else if (page === "discussion") {
+                history.pushState(
+                    { page: page, discussionInfo: discussionInfo },
+                    null,
+                    `/${page}/${discussionInfo.user}/${discussionInfo.postId}`
                 );
             } else {
                 history.pushState(
@@ -737,6 +803,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         var hiddenInput = $(mainView).find(".hidden-post");
                         var postBtn = $(mainView).find(".new-post-btn");
                         enablePostBtn(postTextarea, hiddenInput, postBtn);
+                        addNewPost(
+                            $(postTextarea).closest("form"),
+                            $(hiddenInput),
+                            postTextarea,
+                            postBtn
+                        );
                     }
                     $(dataset).each(function (index, post) {
                         var template = postTemplate(
@@ -762,10 +834,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
                         updatedUserProfile = false;
                     } else view = altView;
+
                     editEvent($(view).find(".fi-rr-pencil"));
                     addToBookmark($(view).find(".bookmark-btn"));
                     addEventToLikeBtns($(view).find(".post-container"));
                     addEventToCommentBtns($(view).find(".post-container"));
+                    displayDiscussion($(view).find(".post-container"));
 
                     postToProfileEventHandler(
                         $(view).find(".viewProfilerContainer")
@@ -871,6 +945,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             editEvent($(profileView).find(".fi-rr-pencil"));
             addEventToLikeBtns($(profileView).find(".post-container"));
             addEventToCommentBtns($(profileView).find(".post-container"));
+            displayDiscussion($(profileView).find(".post-container"));
         }
 
         function postTemplate(post, user, forProfile, authUser) {
@@ -902,9 +977,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             });
 
             if (checkLike) {
-                likeBtnTemp = `<i class="fi fi-sr-heart like-icon"></i> `;
+                likeBtnTemp = `<i data-postPk ='${post.id}' class="fi fi-sr-heart like-icon"></i> `;
             } else {
-                likeBtnTemp = `<i class="fi fi-rr-heart like-icon"></i>`;
+                likeBtnTemp = `<i data-postPk ='${post.id}' class="fi fi-rr-heart like-icon"></i>`;
             }
 
             if (+post.post_likes > 0) {
@@ -914,7 +989,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             }
             var userEditBtn =
                 +post.post_creator_id === +userOnlineId
-                    ? `<div><i class="fi fi-rr-pencil"></i></div>`
+                    ? `<div><i data-postPk = '${post.id}' class="fi fi-rr-pencil"></i></div>`
                     : ``;
             template = `
                                 
@@ -936,9 +1011,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             <div class='post-info'>
                 
                                 <div>${likeBtnTemp}<span class='like-count'>${likes}</span></div>
-                                <div><i class="fi fi-rr-comment comment-icon"></i> <span class='comment-count'>${comments}</span></div>
+                                <div><i data-postPk ='${post.id}' class="fi fi-rr-comment comment-icon"></i> <span class='comment-count'>${comments}</span></div>
                                 ${userEditBtn}
-                                <div><i class="fi ${bookmarkClass} bookmark-btn "></i> </div>
+                                <div><i data-postPk ='${post.id}' class="fi ${bookmarkClass} bookmark-btn "></i> </div>
                             </div>
                         </div>
 
@@ -1258,14 +1333,20 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         }
 
         // handle adding to posts to bookmarks
-        function addToBookmark(allBtn) {
+        function addToBookmark(allBtn, id = null) {
             $(allBtn).each(function (index, btn) {
-                $(btn).on("click", function () {
+                $(btn).on("click", function (e) {
+                    e.stopPropagation();
                     let token = $("#csrf").val();
                     let classToRemove, classToAdd, statusInfo, post_Id;
-                    post_Id = +$(btn)
-                        .closest(".post-container")
-                        .attr("data-postId");
+                    if (id === null) {
+                        post_Id = +$(btn)
+                            .closest(".post-container")
+                            .attr("data-postId");
+                    } else {
+                        post_Id = id;
+                    }
+
                     if ($(btn).hasClass("fi-rr-bookmark")) {
                         statusInfo = "add";
                     } else {
@@ -1296,6 +1377,15 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 }
                                 $(btn).removeClass(classToRemove);
                                 $(btn).addClass(classToAdd);
+                                $(".bookmark-btn").each((index, button) => {
+                                    if (
+                                        +$(button).attr("data-postPk") ===
+                                        post_Id
+                                    ) {
+                                        $(button).removeClass(classToRemove);
+                                        $(button).addClass(classToAdd);
+                                    }
+                                });
                             }
                         },
                     });
@@ -1473,7 +1563,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         // adding event listeners to the like icons and getting post id
 
-        function addEventToLikeBtns(elems) {
+        function addEventToLikeBtns(elems, id = null) {
             $(elems).each(function (index, elem) {
                 $(elem)
                     .find("i.like-icon")
@@ -1482,9 +1572,15 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         e.stopPropagation();
                         let targ = e.target;
                         let status;
-                        let postId = $(targ)
-                            .closest(".post-container")
-                            .attr("data-postId");
+
+                        let postId;
+                        if (id === null) {
+                            postId = $(targ)
+                                .closest(".post-container")
+                                .attr("data-postId");
+                        } else {
+                            postId = id;
+                        }
 
                         if ($(targ).hasClass("fi-sr-heart")) {
                             status = "unlike";
@@ -1527,6 +1623,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 height: `${fixedHeight}`,
                                 width: `${fixedWidth}`,
                             });
+
                             $(likeBtn).addClass("animateLike");
                             $(likeBtn).css("animation-play-state", "running");
                             $(likeDisplaySpan).addClass("like-count-animate");
@@ -1541,9 +1638,16 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 );
                             }, 420);
 
-                            console.log(likeDisplaySpan);
-
                             $(likeDisplaySpan).text(`${data.likes}`);
+                            $(".like-icon").each((index, icon) => {
+                                if (+$(icon).attr("data-postPk") === postId) {
+                                    $(icon).removeClass("fi-rr-heart");
+                                    $(icon).addClass("fi-sr-heart");
+                                    $(icon)
+                                        .siblings("span.like-count")
+                                        .text(`${data.likes}`);
+                                }
+                            });
                         } else {
                             $(likeBtn).removeClass("fi-sr-heart");
 
@@ -1554,7 +1658,23 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             } else {
                                 $(likeDisplaySpan).text("");
                             }
+                            $(".like-icon").each((index, icon) => {
+                                if (+$(icon).attr("data-postPk") === postId) {
+                                    $(icon).removeClass("fi-sr-heart");
+                                    $(icon).addClass("fi-rr-heart");
+                                    if (data.likes > 0) {
+                                        $(icon)
+                                            .siblings("span.like-count")
+                                            .text(`${data.likes}`);
+                                    } else {
+                                        $(icon)
+                                            .siblings("span.like-count")
+                                            .text("");
+                                    }
+                                }
+                            });
                         }
+                        interactionsUpdate(data.posts);
                     } else {
                         console.log(data);
                     }
@@ -1564,7 +1684,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         // Add events to like icons and getting postIds
 
-        function addEventToCommentBtns(elems) {
+        function addEventToCommentBtns(elems, id = null) {
             $(elems).each(function (index, elem) {
                 $(elem)
                     .find("i.comment-icon")
@@ -1572,24 +1692,46 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     .on("click", function (e) {
                         e.stopPropagation();
                         let targ = e.target;
-                        let postCon = $(targ).closest(".post-container");
-                        let postId = $(postCon).attr("data-postId");
-                        let postUsername = $(postCon)
-                            .find(".post-username")
-                            .html();
+                        let postCon;
+
+                        let postId;
+                        let postUsername;
+                        let post_date_class;
+                        let post_message_class;
+                        if (id === null) {
+                            postCon = $(targ).closest(".post-container");
+
+                            postId = $(postCon).attr("data-postId");
+                            postUsername = $(postCon)
+                                .find(".post-username")
+                                .text();
+                            post_date_class = ".post-timestamp";
+                            post_message_class = ".post-message";
+                        } else {
+                            postId = id;
+                            postCon = $(targ).closest(
+                                ".discussion-body-container"
+                            );
+                            postUsername = $(postCon)
+                                .find("#discussion-post-username")
+                                .text();
+                            post_date_class = ".discussion-post-timestamp";
+                            post_message_class = ".discussion-post-message";
+                        }
+
                         let postInfo = {
                             id: postId,
                             authUserPic: $("#submain-1-userpic").attr("src"),
                             profPic: $(postCon).find("img").attr("src"),
                             postUsername: postUsername,
-                            postDate: $(postCon).find(".post-timestamp").html(),
+                            postDate: $(postCon).find(post_date_class).text(),
                             replyMessage:
                                 postUsername ===
                                 $(".submain-1-username h4").text().trim()
                                     ? "Add another Post"
                                     : `Replying to <em>${postUsername}</em>`,
                             postMessage: $(postCon)
-                                .find(".post-message")
+                                .find(post_message_class)
                                 .html(),
                         };
                         console.log(postInfo);
@@ -1633,42 +1775,54 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(btn)
                 .off("click")
                 .on("click", function () {
-                    let token = $("#csrf").val();
                     // make request to the backend to store the comment made
-                    console.log($("#commentInputForDiv").val());
-                    console.log($(formDiv).html());
-                    $.ajax({
-                        url: "/handle_comments",
-                        type: "PUT",
-                        dataType: "json",
-                        data: JSON.stringify({
-                            postId: postId,
-                            message: $("#commentInputForDiv").val(),
-                        }),
-                        headers: {
-                            "X-CSRFToken": token,
-                            "X-Requested-With": "XMLHttpRequest",
-                        },
-                    }).done((data) => {
-                        if (data.message) {
-                            $(".popup-dark").hide();
-                            $(".comment-box-popup").hide();
-                            modalOpen = false;
-                            let commentSpan = $(postCon).find(".comment-count");
-                            setTimeout(() => {
-                                $(commentSpan).text(data.commentNum);
+                    sendCommentToBackend(postId, postCon);
+                });
+        }
 
-                                $(commentSpan).addClass("like-count-animate");
+        function sendCommentToBackend(postId, postCon, fromDiscussion = false) {
+            let token = $("#csrf").val();
+            $.ajax({
+                url: "/handle_comments",
+                type: "PUT",
+                dataType: "json",
+                data: JSON.stringify({
+                    postId: postId,
+                    message: fromDiscussion
+                        ? $("#reply-editable-input").val()
+                        : $("#commentInputForDiv").val(),
+                }),
+                headers: {
+                    "X-CSRFToken": token,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            }).done((data) => {
+                if (data.message) {
+                    $(".popup-dark").hide();
+                    $(".comment-box-popup").hide();
+                    modalOpen = false;
+                    let commentSpan = $(postCon).find(".comment-count");
+                    setTimeout(() => {
+                        $(commentSpan).text(data.commentNum);
 
-                                setTimeout(() => {
-                                    $(commentSpan).removeClass(
-                                        "like-count-animate"
-                                    );
-                                }, 420);
-                            }, 1000);
+                        $(commentSpan).addClass("like-count-animate");
+
+                        setTimeout(() => {
+                            $(commentSpan).removeClass("like-count-animate");
+                        }, 420);
+                    }, 1000);
+                    $(".comment-icon").each((index, icon) => {
+                        if (+$(icon).attr("data-postPk") === postId) {
+                            $(icon)
+                                .siblings("span.comment-count")
+                                .text(data.commentNum);
                         }
                     });
-                });
+                    if (!fromDiscussion) {
+                        updateCommentsInfo(postId);
+                    }
+                }
+            });
         }
 
         // adjust comment box popup based on the media query
@@ -1717,7 +1871,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     </section>
                     <div class ='comment-content'>
                         <img src=${postInfo.authUserPic}>
-                        <div contenteditable='true' placeholder='Post your reply'></div>
+                        <div contenteditable='true' class='commentTextarea' placeholder='Post your reply'></div>
                         <input type='text' id='commentInputForDiv' hidden></input>
                         
                     </div>
@@ -1730,7 +1884,311 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             `;
             return commentBox;
         }
+        // ".post-container"
+
+        // Displaying comment page
+        displayDiscussion($(".post-container"));
+        var commentContainer = $(".comment-posted-container");
+
+        function displayDiscussion(elems) {
+            $(elems).each(function (index, eachEl) {
+                $(eachEl)
+                    .off("click")
+                    .on("click", function (e) {
+                        let targ = $(e.target).closest(".post-container");
+
+                        let postId = $(targ).attr("data-postId");
+                        discussionAjax(postId);
+
+                        console.log("clicked the post con", e.target);
+                    });
+            });
+            $(".discussion-header-container i")
+                .off("click")
+                .on("click", function () {
+                    $("header").show();
+                    $(".reply-info").hide();
+                    $(".reply-editable").css("flex-basis", "80%");
+                    $(".reply-accessories").css("flex-basis", "7%");
+                    $(".reply-accessories").css("paddingRight", "0px");
+                    $(".reply-editable div[contenteditable=true]").html("");
+                    $("#reply-editable-input").val("");
+                    if ($("header .header-title").text().trim() === "Profile") {
+                        showActiveView(profileView);
+                        pushHistoryState("profile", null);
+                        $("title").text(`NETHUB | PROFILE`);
+                    } else {
+                        let title = $("header .header-title").text().trim();
+                        $("title").text(`NETHUB | ${title.toUpperCase()}`);
+                        if (title === "Following Posts") {
+                            title = title.replace(" ", "_");
+                        }
+
+                        pushHistoryState(title.toLowerCase(), null);
+                        if (title === "Home") {
+                            showActiveView(mainView);
+                        } else {
+                            showActiveView(altView);
+                        }
+                    }
+                    //  showActiveView(altView)
+                });
+            $(".reply-editable div[contenteditable=true]").on(
+                "keyup",
+                function () {
+                    $("#reply-editable-input").val($(this).html());
+                    if ($(this).text().trim().length > 0) {
+                        $(".reply-accessories button").prop("disabled", false);
+                    } else {
+                        $(".reply-accessories button").prop("disabled", true);
+                    }
+                }
+            );
+        }
+        function discussionAjax(postId, partialUpdate = false) {
+            $("header").hide();
+            $(commentContainer).empty();
+            let token = $("#csrf").val();
+            // sendCommentToBackend(postId, postCon, (fromDiscussion = false));
+
+            $(".reply-accessories button")
+                .off("click")
+                .on("click", function () {
+                    sendCommentToBackend(
+                        postId,
+                        $(".discussion-body-container"),
+                        true
+                    );
+                    $(".reply-editable div[contenteditable=true]").html("");
+                    $("#reply-editable-input").val("");
+
+                    // Update comment information on discussion page...
+                    updateCommentsInfo(postId);
+                });
+
+            $.ajax({
+                url: "/comment_page",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    postId: postId,
+                }),
+                headers: {
+                    "X-CSRFToken": token,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            }).done((data) => {
+                if (data.postInfo) {
+                    if (!partialUpdate) {
+                        showActiveView($(".discussion-wrapper"));
+                        pushHistoryState("discussion", null, {
+                            user: data.postInfo.post_creator_username.toLowerCase(),
+                            postId: data.postInfo.id,
+                        });
+                        $("title").text(`NETHUB | DISCUSSION`);
+                        displayDiscussionInfo(data.postInfo, data.user);
+                    } else {
+                        commentContainerUpdate(data.postInfo);
+                    }
+                }
+            });
+        }
+        // function to pluralize words based on the number given
+        function pluralizeWords(num) {
+            if (num > 1) {
+                return "s";
+            } else {
+                return "";
+            }
+        }
+        // showing the right comment info
+
+        function displayDiscussionInfo(data, user) {
+            let content_creator_img = data.post_creator_pic;
+            let content_creator_username = data.post_creator_username;
+            let content_creator_message = data.post_content;
+            let content_creator_timestamp = data.post_full_date;
+            $(".discussion-post-info-profPic img").attr(
+                "src",
+                content_creator_img
+            );
+            $(".discussion-post-info-username span").text(
+                content_creator_username
+            );
+            $(".discussion-post-message").html(content_creator_message);
+            $(".discussion-post-timestamp").text(content_creator_timestamp);
+            //  Defining the interaction information e.g likes, comments etc....
+            interactionsUpdate(data);
+
+            // Defining the action buttons e.g like button, comment button etc...
+
+            // Like Action Button
+            let likeStatus = null;
+            data.liked_by.filter((user) => {
+                if (user.username === targetUser.toLowerCase()) {
+                    likeStatus = "<i class='fi fi-sr-heart like-icon'></i>";
+                    return;
+                }
+            });
+            let likeNumber =
+                data.post_likes > 0
+                    ? `<span class='like-count'>${data.post_likes}</span>`
+                    : "<span class='like-count'></span>";
+
+            let likeInfo =
+                likeStatus !== null
+                    ? likeStatus + likeNumber
+                    : '<i class="fi fi-rr-heart like-icon"></i>' + likeNumber;
+
+            let likeButton = `<div>
+                ${likeInfo}
+            </div>`;
+
+            // Comment Action Button
+            commentNumber =
+                data.post_comment_number > 0
+                    ? `<span class='comment-count'>
+                               ${data.post_comment_number}
+                            </span>`
+                    : "<span class='comment-count'></span>";
+            commentButton = `
+                        <div>
+                            <i class="fi fi-rr-comment comment-icon"></i> 
+                            ${commentNumber}
+                        </div>
+            
+            `;
+
+            // Edit Button
+            //  user.bookmarks.includes(data.id)
+            editButton =
+                user.username === data.post_creator_username
+                    ? `<div><i class="fi fi-rr-pencil"></i></div>`
+                    : "";
+
+            // Bookmark button
+            bookmarkButton = user.bookmarks.includes(data.id)
+                ? `<div><i class="bookmark-btn fi-sr-bookmark"><i><div>`
+                : `<div><i class="bookmark-btn fi-rr-bookmark"><i><div>`;
+
+            actionButtons =
+                likeButton + commentButton + editButton + bookmarkButton;
+
+            $(".discussion-post-interaction-btn").html(actionButtons);
+
+            editEvent(
+                $(".discussion-post-interaction-btn").find(".fi-rr-pencil"),
+                data.id
+            );
+            addToBookmark(
+                $(".discussion-post-interaction-btn").find(".bookmark-btn"),
+                data.id
+            );
+
+            addEventToLikeBtns($(".discussion-post-interaction-btn"), data.id);
+            addEventToCommentBtns(
+                $(".discussion-post-interaction-btn"),
+                data.id
+            );
+            // replying to div
+
+            $(".reply-info em").text(data.post_creator_username);
+
+            // replying user profile picture
+
+            $(".reply-user-image img").attr("src", user.pic);
+
+            $(".reply-editable div[contenteditable='true']").on(
+                "focusin",
+                function () {
+                    $(".reply-info").show();
+                    $(".reply-editable").css("flex-basis", "100%");
+                    $(".reply-accessories").css("flex-basis", "100%");
+                    $(".reply-accessories").css("paddingRight", "10px");
+                }
+            );
+
+            // Comments template
+
+            data.post_comment_info.forEach((eachComment) => {
+                commentPostedTemplate = `
+                
+                        <div class="individual-comment-posted">
+                            <div class="individual-comment-user-pics">
+                                <img src="${eachComment.comment_user_info.userCommentPic}" alt="" />
+                            </div>
+                            <div class="individual-comment-body">
+                                <div class="individual-comment-user-info">
+                                    <span>${eachComment.comment_user_info.userCommentUsername}</span>
+                                    <span>${eachComment.comment_date}</span>
+                                </div>
+                                <div class="individual-comment-message">
+                                   ${eachComment.comment_content}
+                                </div>
+                            </div>
+                        </div>
+                
+                `;
+                $(commentContainer).append(commentPostedTemplate);
+            });
+        }
+
+        function interactionsUpdate(data) {
+            let likeInteraction =
+                data.post_likes > 0
+                    ? `<div>${data.post_likes} <span>like${pluralizeWords(
+                          data.post_likes
+                      )}</span></div>`
+                    : "";
+            let commentInteraction =
+                data.post_comment_number > 0
+                    ? `<div>${
+                          data.post_comment_number
+                      } <span> comment${pluralizeWords(
+                          data.post_comment_number
+                      )}</span></div>`
+                    : "";
+            if (likeInteraction != "" || commentInteraction != "") {
+                let interactionTemplate = likeInteraction + commentInteraction;
+                $(".discussion-post-interactions").html(interactionTemplate);
+            } else {
+                $(".discussion-post-interactions").hide();
+            }
+        }
+
+        function commentContainerUpdate(data) {
+            interactionsUpdate(data);
+            $(".reply-info").hide();
+            $(".reply-editable").css("flex-basis", "80%");
+            $(".reply-accessories").css("flex-basis", "7%");
+            $(".reply-accessories").css("paddingRight", "0px");
+            data.post_comment_info.forEach((eachComment) => {
+                commentPostedTemplate = `
+                
+                        <div class="individual-comment-posted">
+                            <div class="individual-comment-user-pics">
+                                <img src="${eachComment.comment_user_info.userCommentPic}" alt="" />
+                            </div>
+                            <div class="individual-comment-body">
+                                <div class="individual-comment-user-info">
+                                    <span>${eachComment.comment_user_info.userCommentUsername}</span>
+                                    <span>${eachComment.comment_date}</span>
+                                </div>
+                                <div class="individual-comment-message">
+                                   ${eachComment.comment_content}
+                                </div>
+                            </div>
+                        </div>
+                
+                `;
+                $(commentContainer).append(commentPostedTemplate);
+            });
+        }
+
+        function updateCommentsInfo(postId) {
+            discussionAjax(postId, true);
+        }
     });
 });
-
+// showActiveView(".discussion-wrapper");
 // 192.168.13.64
