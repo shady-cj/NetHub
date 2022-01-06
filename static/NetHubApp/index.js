@@ -2150,6 +2150,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     : "";
             if (likeInteraction != "" || commentInteraction != "") {
                 let interactionTemplate = likeInteraction + commentInteraction;
+                $(".discussion-post-interactions").show();
                 $(".discussion-post-interactions").html(interactionTemplate);
             } else {
                 $(".discussion-post-interactions").hide();

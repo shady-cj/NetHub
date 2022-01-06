@@ -1569,6 +1569,7 @@ form .form-group .form-container div span {
     background-color: #f1ec40;
 
     border: none;
+    cursor: pointer;
 }
 .reply-editable-container .reply-accessories button:disabled {
     background-color: #c7c35a;
