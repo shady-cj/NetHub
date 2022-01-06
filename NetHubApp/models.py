@@ -58,6 +58,46 @@ class Comment(models.Model):
 	comment_user = models.ForeignKey(User,on_delete=models.CASCADE)
 	comment_content = models.TextField()
 	comment_date = models.DateTimeField(auto_now_add=True)
+	def verbose_time_plural(self,num):
+		if num > 1:
+			return 's'
+		else:
+			return ''
+
+
+	def time_format(self):
+		now = datetime.datetime.now(datetime.timezone.utc)
+		timestamp =self.comment_date
+		time_difference = now - timestamp
+		if time_difference.days < 1:
+			hours = time_difference.seconds * 0.000277778 
+			minutes = time_difference.seconds * 0.01666668
+			seconds = time_difference.seconds
+
+			if hours >= 1:
+
+				return f'{round(hours)} hour{self.verbose_time_plural(round(hours))} ago'
+
+			elif minutes < 60 and minutes >= 1 :
+				return f'{round(minutes)} minute{self.verbose_time_plural(round(minutes))} ago'
+
+			elif seconds == 0:
+				return 'Now'
+
+			else:
+				return f'{round(seconds)} second{self.verbose_time_plural(round(seconds))} ago'
+
+		else:
+			return self.comment_date.strftime("%d %b, %Y")
+
+
+	# def serialize(self):
+	# 	return {
+	# 		'id':self.id,
+	# 		'comment_user':[user.serialize() for user in self.comment_user.all()],
+	# 		'content':self.comment_content,
+	# 		'comment_date':self.time_format()
+	# 	}
 class Post(models.Model):
 	post_creator = models.ForeignKey(User,on_delete=models.CASCADE,related_name="posts" )
 	post_content = models.TextField()
@@ -79,7 +119,6 @@ class Post(models.Model):
 	def time_format(self):
 		now = datetime.datetime.now(datetime.timezone.utc)
 		timestamp =self.post_date
-		test = timestamp + timezone.timedelta(days=45)
 		time_difference = now - timestamp
 		if time_difference.days < 1:
 			hours = time_difference.seconds * 0.000277778 
@@ -114,9 +153,12 @@ class Post(models.Model):
 			'post_content':self.post_content,
 			# 'post_image': self.post_image.url,
 			'post_date':self.time_format(),
+			'post_full_date':self.post_date.strftime(" %I:%M %p · %b %d, %Y"),
 			'post_likes':self.post_likes,
 			'liked_by':[{'userId':user.id, 'username':user.username,'userPic':user.profile_picture.url } for user in self.liked_by.all() ],
-			'post_comment_info':[{'id':comment.id,'comment_content':comment.comment_content, 'comment_date':comment.comment_date,'comment_user_info':{'userCommentId':comment.comment_user.id,'userCommentPic':comment.comment_user.profile_picture.url,'userCommentUsername':comment.comment_user.username}} for comment in self.post_comment.all()],
+			'post_comment_info':[
+				{'id':comment.id,'comment_content':comment.comment_content, 'comment_date':comment.time_format(),'comment_user_info':{'userCommentId':comment.comment_user.id,'userCommentPic':comment.comment_user.profile_picture.url,'userCommentUsername':comment.comment_user.username.capitalize()}} for comment in self.post_comment.all()
+			],
 			'post_comment_number':self.post_comment.all().count(),
 			'edited':self.Edited
 

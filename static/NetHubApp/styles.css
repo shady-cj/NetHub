@@ -314,7 +314,7 @@ body {
     width: 100%;
     height: 100vh;
     overflow-y: scroll;
-
+    overflow-x: hidden;
     z-index: 9.5;
 }
 /* #alternative-post-container
@@ -925,6 +925,10 @@ textarea {
 }
 .post-content .post-message {
     word-spacing: 0.4px;
+    font-size: 13px;
+
+    word-wrap: break-word;
+    word-break: break-word;
     padding: 3px 4px;
     flex-basis: 40%;
     font-weight: 300;
@@ -1044,17 +1048,21 @@ textarea {
     color: whitesmoke;
     margin-left: 50px;
 }
-.new-post-mobile-container > div i {
+.new-post-mobile-container > div .mobile-back-post-btn {
     color: whitesmoke;
-    display: inline-block;
+    display: inline-flex;
     margin-left: 10px;
     height: 40px;
     width: 40px;
-    text-align: center;
-    line-height: 40px;
+    justify-content: center;
+    align-items: center;
     border-radius: 50%;
     cursor: pointer;
     transition: 0.4s ease-in-out;
+}
+.mobile-back-post-btn svg {
+    fill: whitesmoke;
+    width: 25px;
 }
 .new-post-mobile-container > div i:hover {
     background-color: rgb(88, 88, 88, 0.3);
@@ -1109,16 +1117,18 @@ textarea {
     outline: none;
 }
 .new-post-container .textarea:empty::before,
-.comment-box-popup
-    .commentBox
-    .comment-content
-    div[contenteditable="true"]:empty::before,
-.new-post-mobile-container > form .textarea:empty::before {
+.new-post-mobile-container > form .textarea:empty::before,
+.comment-content .commentTextarea:empty::before {
     content: attr(placeholder);
     pointer-events: none;
     color: rgb(105, 102, 102);
     display: block;
 }
+
+.comment-content .commentTextarea:empty::before {
+    color: rgb(180, 175, 175);
+}
+
 .submain-1-container {
     width: 100%;
     height: 100%;
@@ -1386,7 +1396,246 @@ form .form-group .form-container div span {
 .btn-signUp-container .sign-up-btn:active {
     transform: scale(0.8);
 }
+/********************************** Discussion Styling Section Starts  ******************************/
+.discussion-wrapper {
+    display: none;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 60px !important;
+    color: whitesmoke;
+}
+.discussion-wrapper .discussion-header-container {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+.discussion-wrapper .discussion-header-container i {
+    display: inline-flex;
+    height: 40px;
+    width: 40px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
 
+    cursor: pointer;
+    background-color: transparent;
+    transition: background-color 0.4s ease-in-out;
+    margin-right: 30px;
+    margin-left: 25px;
+}
+.discussion-wrapper .discussion-header-container i svg {
+    fill: whitesmoke;
+    width: 25px;
+}
+.discussion-wrapper .discussion-header-container i:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.discussion-wrapper .discussion-header-container h1 {
+    font-size: 24px;
+    padding: 0;
+    margin: 0;
+}
+.discussion-body-container {
+    display: flex;
+    flex-flow: column nowrap;
+    /* background-color: red; */
+    padding: 0px 25px;
+}
+.discussion-body-container .discussion-post-info {
+    display: flex;
+
+    flex-flow: row wrap;
+    /* background-color: blue; */
+    align-items: center;
+}
+.discussion-post-info .discussion-post-info-profPic img {
+    height: 40px;
+    width: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 12px;
+    margin-left: 0;
+}
+.discussion-post-info-username span {
+    font-size: 20px;
+    font-weight: 700;
+    margin-left: 14px;
+}
+.discussion-body-container .discussion-post-message {
+    font-size: 16px;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+.discussion-post-timestamp,
+.discussion-post-interactions,
+.discussion-post-interaction-btn {
+    padding: 14px 0;
+    border-bottom: 1px solid gray;
+}
+.discussion-post-interactions {
+    display: flex;
+    align-items: center;
+}
+.discussion-post-interactions > div:nth-child(2) {
+    margin-left: 20px;
+}
+.discussion-post-interaction-btn i {
+    cursor: pointer;
+}
+.discussion-post-interaction-btn i.fi-sr-heart {
+    color: red;
+}
+.discussion-post-interaction-btn i.fi-sr-bookmark {
+    color: white;
+}
+.discussion-post-interaction-btn div {
+    position: relative;
+}
+.discussion-post-interactions span {
+    color: rgb(151, 149, 149);
+}
+.discussion-post-timestamp {
+    color: rgb(151, 149, 149);
+    font-size: 14px;
+}
+.discussion-post-interaction-btn {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-around;
+    color: rgb(151, 149, 149);
+}
+
+.discussion-reply-container {
+    padding: 9px 25px;
+    border-bottom: 1px solid gray;
+}
+.discussion-reply-subcontainer {
+    display: flex;
+    flex-flow: column nowrap;
+}
+.discussion-reply-subcontainer .reply-info {
+    padding-left: 62px;
+    padding-top: 5px;
+    display: none;
+    color: rgb(151, 149, 149);
+}
+.reply-info em {
+    color: #f1ec40;
+    font-size: 14px;
+}
+.discussion-reply-subcontainer .reply-container {
+    display: flex;
+    flex-flow: row wrap;
+}
+.reply-container .reply-user-image {
+    flex-basis: 6%;
+    text-align: center;
+}
+.reply-container .reply-user-image img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.reply-editable-container {
+    display: flex;
+    flex-basis: 87%;
+    justify-content: space-between;
+    align-items: center;
+
+    flex-flow: row wrap;
+}
+.reply-editable-container .reply-editable {
+    /* flex-basis: 85%; */
+    flex-basis: 78%;
+    /* flex-basis: 80%; */
+}
+.reply-editable-container .reply-accessories {
+    /* flex-basis: 5%; */
+    flex-basis: 10%;
+
+    text-align: right;
+}
+.reply-editable-container .reply-accessories button {
+    padding: 6px 14px;
+    /* padding: 8px 16px; */
+    /* border-radius: 12px; */
+
+    border-radius: 10px;
+    background-color: #f1ec40;
+
+    border: none;
+}
+.reply-editable-container .reply-accessories button:disabled {
+    background-color: #c7c35a;
+}
+
+.reply-editable-container .reply-editable div[contenteditable="true"] {
+    width: 100%;
+    min-height: 30px;
+    margin: 10px 0;
+    padding: 3px 14px;
+    outline: none;
+    font-size: 16px;
+}
+.reply-editable-container
+    .reply-editable
+    div[contenteditable="true"]:empty::before {
+    content: attr(placeholder);
+    pointer-events: none;
+    color: rgb(151, 149, 149);
+    display: block;
+}
+
+.individual-comment-posted {
+    padding: 16px 25px;
+    display: flex;
+    align-items: center;
+    flex-flow: row wrap;
+    border-bottom: 1px solid gray;
+}
+.individual-comment-posted .individual-comment-user-pics {
+    flex-basis: 6%;
+    /* flex-basis: 8%; */
+}
+.individual-comment-posted .individual-comment-user-pics img {
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+}
+.individual-comment-posted .individual-comment-body {
+    /* flex-basis: 88%; */
+    flex-basis: 85%;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 12px 14px;
+}
+
+.individual-comment-body .individual-comment-user-info {
+    display: flex;
+    justify-content: space-between;
+}
+.individual-comment-body .individual-comment-user-info span:first-child {
+    font-size: 18px;
+    font-weight: 600;
+}
+.individual-comment-body .individual-comment-user-info span:last-child {
+    /* font-size: 16px; */
+    font-size: 13px;
+
+    font-style: italic;
+    color: rgb(151, 149, 149);
+}
+.individual-comment-body .individual-comment-message {
+    padding-top: 14px;
+}
+/*************************************** Discussion Styling Ends **************************************/
 /* REGISTER FORM ENDS */
 
 /* ***********************************8 */
@@ -1663,6 +1912,10 @@ form .form-group .form-container div span {
     .edit-profile-header h1 {
         margin-left: -120px;
     }
+
+    .discussion-wrapper {
+        padding-bottom: 29px;
+    }
 }
 
 @media only screen and (min-width: 1100px) {
@@ -1753,5 +2006,37 @@ form .form-group .form-container div span {
     }
     .comment-box-popup {
         width: 50%;
+    }
+    .individual-comment-posted .individual-comment-user-pics {
+        flex-basis: 8%;
+    }
+    .individual-comment-posted .individual-comment-body {
+        flex-basis: 88%;
+    }
+    .individual-comment-body .individual-comment-user-info span:last-child {
+        font-size: 16px;
+    }
+    .reply-editable-container .reply-editable {
+        flex-basis: 85%;
+    }
+    .reply-editable-container .reply-accessories {
+        flex-basis: 5%;
+    }
+    .reply-editable-container .reply-editable div[contenteditable="true"] {
+        font-size: 18px;
+    }
+    .discussion-post-info .discussion-post-info-profPic img,
+    .reply-container .reply-user-image img {
+        width: 50px;
+        height: 50px;
+    }
+    .individual-comment-posted .individual-comment-user-pics img {
+        height: 55px;
+        width: 55px;
+    }
+
+    .reply-editable-container .reply-accessories button {
+        padding: 8px 16px;
+        border-radius: 12px;
     }
 }
