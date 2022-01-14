@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt,ensure_csrf_cookie
 from django.db import IntegrityError
+from django.db.models import F
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse,Http404
 from .utils import ExtendedEncoder,ConvertB64ToImage
 from django.shortcuts import render,get_object_or_404
@@ -438,16 +439,18 @@ def handleLike(request):
            
             if request.user not in getPost.liked_by.all():
                 getPost.liked_by.add(request.user)
-                getPost.post_likes +=1
+                getPost.post_likes = F('post_likes') + 1
                 getPost.save()
                 message = 'liked successfully'
 
         elif status == 'unlike':
             if request.user in getPost.liked_by.all() and getPost.post_likes > 0:
                 getPost.liked_by.remove(request.user)
-                getPost.post_likes -= 1
+                getPost.post_likes = F('post_likes') - 1
                 getPost.save()
                 message = 'unliked successfully'
+        
+        getPost =  Post.objects.get(id = getPost.id)
 
         return JsonResponse({'message':message, 'likes':getPost.post_likes,'posts':getPost.serialize()})
 

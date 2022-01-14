@@ -1895,12 +1895,16 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 $(eachEl)
                     .off("click")
                     .on("click", function (e) {
-                        let targ = $(e.target).closest(".post-container");
+                        if (targetUser && $("#submain-1-userpic").attr("src")) {
+                            let targ = $(e.target).closest(".post-container");
 
-                        let postId = $(targ).attr("data-postId");
-                        discussionAjax(postId);
-
-                        console.log("clicked the post con", e.target);
+                            let postId = $(targ).attr("data-postId");
+                            discussionAjax(postId);
+                        } else {
+                            alert(
+                                "Login or create an account to have access to full features"
+                            );
+                        }
                     });
             });
             $(".discussion-header-container i")
