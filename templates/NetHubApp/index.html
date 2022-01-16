@@ -164,7 +164,7 @@
         <section class='actual-follow-con'>
         {% if page == 'FOLLOWERS' %}
             {% for eachfollow in follow %}
-                <div>
+                <div class= 'follow-container-information'>
                     <div class='follow-img'>
                         <img src ="{{eachfollow.user_follower.profile_picture.url}}">
                     </div>
@@ -186,7 +186,7 @@
             {% endfor %}
         {% else %}
             {% for eachfollow in follow %}
-                <div>
+                <div class= 'follow-container-information'>
                     <div class='follow-img'><img src ='{{eachfollow.profile_picture.url}}'></div>
                     <div class='follow-username'><span>{{eachfollow.username|title}}<span></div>
                     {% if authFollow.user_follower != eachfollow %}

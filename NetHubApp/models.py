@@ -33,7 +33,10 @@ class User(AbstractUser):
 			'bookmarks':[b.post.id for b in self.user_bookmark.all()],
 			'firstName':self.first_name,
 			'lastName':self.last_name,
-			'followers':[f.user_follower.username for f in self.followers.all()]
+			'fullName':self.first_name + " "+ self.last_name,
+			'followers':[f.user_follower.username for f in self.followers.all()],
+			'following':[follow.username for follow in self.user_following.all().first().following.all()],
+			'posts':[post.serialize() for post in self.posts.all()]
 
 		}
 
@@ -51,7 +54,7 @@ class Bookmark(models.Model):
 	post =models.ForeignKey("Post", on_delete=models.CASCADE, related_name='bookmark_post')
 
 class Follower(models.Model):
-	user_follower = models.ForeignKey(User,on_delete=models.CASCADE)
+	user_follower = models.ForeignKey(User,on_delete=models.CASCADE,related_name='user_following')
 	following = models.ManyToManyField(User,blank=True,related_name="followers")
 
 class Comment(models.Model):
@@ -163,3 +166,13 @@ class Post(models.Model):
 			'edited':self.Edited
 
 		}
+
+
+class Search(models.Model):
+	query = models.CharField(max_length = 64,blank= True)
+	search_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name = 'search_queries')
+	
+	class Meta:
+		
+		verbose_name_plural = 'Searches'
+

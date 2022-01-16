@@ -98,6 +98,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     type: "POST",
                     dataType: "json",
                     data: payload,
+                    contentType: "application/json; charset=utf-8",
+
                     headers: {
                         "X-CSRFToken": token,
                         "X-Requested-With": "XMLHttpRequest",
@@ -233,12 +235,20 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                             type: "POST",
                                             url: `/edit_post/${postId}`,
                                             dataType: "json",
-                                            data: {
+                                            contentType:
+                                                "application/json; charset=utf-8",
+
+                                            data: JSON.stringify({
                                                 post_content:
                                                     $(postMessage).html(),
-                                            },
+                                            }),
+
                                             // contentType: 'application/json',
-                                            headers: { "X-CSRFToken": token },
+                                            headers: {
+                                                "X-CSRFToken": token,
+                                                "X-Requested-With":
+                                                    "XMLHttpRequest",
+                                            },
                                         }).done(function (result) {
                                             console.log(result.edited);
                                             $(".fi-rr-pencil").each(
@@ -770,7 +780,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         }
 
                         var followTemplate = `
-                                    <div>
+                                    <div class='follow-container-information'>
                                         <div class='follow-img'><img src ='${followInfo.pic}'></div>
                                         <div class='follow-username'><span>${followInfo.username}<span></div>
                                         ${followBtnTemplate}
@@ -779,6 +789,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
                         $(followSection).append(followTemplate);
                     });
+                    // link each user to their profile page
+                    linkFollowUserToProfilePage(
+                        $(followSection).find(".follow-container-information")
+                    );
+
+                    // getting the user clicked when the following button is clicked
                     getUserToFollow($(followSection).find(".follow-info"));
                 } else {
                     if (forHome) {
@@ -1022,6 +1038,24 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             return template;
         }
 
+        // Function to Link Users on Following Page to Their Profile Page
+        linkFollowUserToProfilePage($(".follow-container-information"));
+        function linkFollowUserToProfilePage(followContainers) {
+            $(followContainers).each(function (index, con) {
+                $(con)
+                    .off("click")
+                    .on("click", function () {
+                        let fUser = $(con)
+                            .find(".follow-username")
+                            .text()
+                            .trim()
+                            .toLowerCase();
+                        if (fUser) {
+                            routeToProfilePage(fUser);
+                        }
+                    });
+            });
+        }
         $("#profile-edit-btn").click(activateEditPage);
         var profileEdited;
         var imageByte;
@@ -1061,7 +1095,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     });
                 });
 
-                $(".edit-profile-header i").click(function () {
+                $(".edit-profile-header .icon-times").click(function () {
                     if (profileEdited) {
                         $(".update-confirm-modal").css("display", "flex");
                         $("#edit-discard").on("click", function () {
@@ -1082,76 +1116,89 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 $("#save-edited-profile-btn")
                     .off("click")
                     .on("click", function () {
-                        var updatedData = {
-                            fname: $("#update-fname").val().trim(),
-                            lname: $("#update-lname").val().trim(),
-                            username: $("#update-username").val().trim(),
-                            bio: $("#update-bio").val().trim(),
-                            dob: $("#update-dob").val().trim(),
-                            pic: imageByte,
-                            imageFile: $("#edit-pics").val(),
-                        };
-                        var token = $("#csrf").val();
-                        $.ajax({
-                            url: `/updateUser/${targetUser}`,
-                            type: "PUT",
-                            dataType: "json",
-                            contentType: "application/json",
-                            data: JSON.stringify(updatedData),
-                            headers: {
-                                "X-CSRFToken": token,
-                                "X-Requested-With": "XMLHttpRequest",
-                            },
+                        let dobSpanText = $("#update-dob-text-span")
+                            .text()
+                            .trim();
+                        let dob =
+                            dobSpanText === "Not Provided" ? "" : dobSpanText;
+                        let fname = $("#update-fname").val().trim();
+                        let lname = $("#update-lname").val().trim();
+                        let username = $("#update-username").val().trim();
+                        if (fname.length && lname.length && username.length) {
+                            var updatedData = {
+                                fname: fname,
+                                lname: lname,
+                                username: username,
+                                bio: $("#update-bio").val().trim(),
+                                dob: dob,
+                                pic: imageByte,
+                                imageFile: $("#edit-pics").val(),
+                            };
+                            var token = $("#csrf").val();
+                            $.ajax({
+                                url: `/updateUser/${targetUser}`,
+                                type: "PUT",
+                                dataType: "json",
+                                contentType: "application/json; charset=utf-8",
+                                data: JSON.stringify(updatedData),
+                                headers: {
+                                    "X-CSRFToken": token,
+                                    "X-Requested-With": "XMLHttpRequest",
+                                },
 
-                            success: (data) => {
-                                if (data.error) {
-                                    alert("An error occured " + data.error);
-                                } else {
-                                    targetUser =
-                                        data.user.username.toLowerCase();
+                                success: (data) => {
+                                    if (data.error) {
+                                        alert("An error occured " + data.error);
+                                    } else {
+                                        targetUser =
+                                            data.user.username.toLowerCase();
 
-                                    console.log(data.user);
-                                    var empty =
-                                        "<h3 class='empty-post'> You haven't made any post yet</h3>";
-                                    if (imageByte !== null) {
-                                        $("#submain-1-userpic").attr(
-                                            "src",
-                                            imageByte
+                                        var empty =
+                                            "<h3 class='empty-post'> You haven't made any post yet</h3>";
+                                        if (imageByte !== null) {
+                                            $("#submain-1-userpic").attr(
+                                                "src",
+                                                imageByte
+                                            );
+                                        }
+                                        renderProfilePage(
+                                            data["users_posts"],
+                                            data.user,
+                                            data.authUser,
+                                            data["num_following"],
+                                            data["num_followers"],
+                                            empty
                                         );
+                                        pushHistoryState("profile", empty);
+
+                                        $(".submain-1-username").attr(
+                                            "data-username",
+                                            targetUser
+                                        );
+                                        $(".submain-1-username")
+                                            .find("h4")
+                                            .text(data.user.username);
+                                        $(".hide-edit-info").hide();
+                                        $(".popup-dark").hide();
+                                        updatedUserProfile = true;
+                                        imageByte = null;
                                     }
-                                    renderProfilePage(
-                                        data["users_posts"],
-                                        data.user,
-                                        data.authUser,
-                                        data["num_following"],
-                                        data["num_followers"],
-                                        empty
-                                    );
-                                    pushHistoryState("profile", empty);
+                                },
 
-                                    $(".submain-1-username").attr(
-                                        "data-username",
-                                        targetUser
-                                    );
-                                    $(".submain-1-username")
-                                        .find("h4")
-                                        .text(data.user.username);
-                                    $(".hide-edit-info").hide();
-                                    $(".popup-dark").hide();
-                                    updatedUserProfile = true;
-                                    imageByte = null;
-                                }
-                            },
-
-                            error: (
-                                XMLHttpRequest,
-                                textStatus,
-                                errorThrown
-                            ) => {
-                                console.log(textStatus);
-                                console.log(errorThrown);
-                            },
-                        });
+                                error: (
+                                    XMLHttpRequest,
+                                    textStatus,
+                                    errorThrown
+                                ) => {
+                                    console.log(textStatus);
+                                    console.log(errorThrown);
+                                },
+                            });
+                        } else {
+                            alert(
+                                "First Name, Last Name or Username cannot be empty"
+                            );
+                        }
                     });
             });
 
@@ -1188,7 +1235,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 </div>
                             </div>
                             <div class= 'edit-profile-header'>
-                                <i class="fas fa-times"></i>
+                                <div class="icon-times">
+                                    <svg viewBox="0 0 15 15" aria-hidden="true" class="r-3xi3v6 r-4qtqp9 r-yyyyoo r-1or9b2r r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-5soawk"><g><path d="M8.914 7.5l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L7.5 6.086 1.707.293c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L6.086 7.5.293 13.293c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L7.5 8.914l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L8.914 7.5z"></path></g></svg>
+                                </div>
                                 
                                 <h1>Edit Profile</h1>
                                 <button id='save-edited-profile-btn'>Save</button>
@@ -1217,7 +1266,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                         <textarea id='update-bio' style='font-family:sans-serif; font-weight: 400;'>${Bio}</textarea>
                                     </div>
                                 </div>
-                                <div class='edit-profile-dob'>Date Of Birth <label for='update-dob'><i class='fas fa-chevron-down'></i></label> <span>${user.dob}</span> <input id='update-dob' type='text'> </div>
+                                <div class='edit-profile-dob'>Date Of Birth <label for='update-dob'><i class='fas fa-chevron-down'></i></label> <span id= 'update-dob-text-span'>${user.dob}</span> <input id='update-dob' type='text'> </div>
                             </div>
                         </form> 
               
@@ -1299,6 +1348,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
             $(removeIcon).on("click", function () {
                 $(cropMainCon).hide();
+                $(editSection).css("overflow-y", "scroll");
             });
             $(updateDob).focusin(function () {
                 var icon = $(this).siblings("label").children("i");
@@ -1321,7 +1371,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(updateDob).datepicker("option", "showAnim", "drop");
             $(updateDob).datepicker("option", "dateFormat", "dd MM, yy");
 
-            $(updateDob).change(function () {
+            $(updateDob).on("change", function () {
                 $(this).siblings("span").text($(this).val());
             });
             $(editSection)
@@ -1361,6 +1411,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             status: statusInfo,
                             postId: post_Id,
                         }),
+                        contentType: "application/json; charset=utf-8",
+
                         headers: {
                             "X-CSRFToken": token,
                             "X-Requested-With": "XMLHttpRequest",
@@ -1401,7 +1453,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(followBtns).each(function (index, btn) {
                 $(btn)
                     .off("click")
-                    .on("click", function () {
+                    .on("click", function (e) {
+                        e.stopPropagation();
                         let userToFollow, forProfile;
                         console.log(this);
                         if ($(btn).attr("data-followFor") === "profilePage") {
@@ -1448,6 +1501,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 type: "PUT",
                 dataType: "json",
                 data: JSON.stringify(putData),
+                contentType: "application/json; charset=utf-8",
                 headers: {
                     "X-CSRFToken": token,
                     "X-Requested-With": "XMLHttpRequest",
@@ -1479,10 +1533,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         let profUser = $(".profile-info-username").text().trim();
         navToFollowPage($(".following-con"), profUser);
         navToFollowPage($(".followers-con"), profUser);
+
         function navToFollowPage(con, profileUser) {
             $(con)
                 .off("click")
-                .on("click", "span", function () {
+                .on("click", "span", function (e) {
                     let page, title;
                     if ($(con).hasClass("following-con")) {
                         page = "following";
@@ -1491,27 +1546,27 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         page = "followers";
                         title = "Followers";
                     }
-
-                    if (targetUser === profileUser.toLowerCase()) {
-                        isMainUser = true;
-
-                        $(mainNavLinks).each(function (index, nav_link) {
-                            if ($(nav_link).attr("data-link") === page) {
-                                addActive(
-                                    mainNavLinks,
-                                    nav_link,
-                                    "active-link"
-                                );
-                            }
-                        });
-                    } else {
-                        isMainUser = false;
-                        clickedUser = profileUser.toLowerCase();
-                        $(mainNavLinks).removeClass("active-link");
-                        $(footerLinks).removeClass("footer-active");
-                    }
-                    viewsHandler(page, title, null);
+                    followPageRouting(page, title, profileUser);
                 });
+        }
+
+        // For routing to the follow page either after calling the navToFollowPage function or after clicking on the follow information on top users page
+        function followPageRouting(page, title, profileUser) {
+            if (targetUser === profileUser.toLowerCase()) {
+                isMainUser = true;
+
+                $(mainNavLinks).each(function (index, nav_link) {
+                    if ($(nav_link).attr("data-link") === page) {
+                        addActive(mainNavLinks, nav_link, "active-link");
+                    }
+                });
+            } else {
+                isMainUser = false;
+                clickedUser = profileUser.toLowerCase();
+                $(mainNavLinks).removeClass("active-link");
+                $(footerLinks).removeClass("footer-active");
+            }
+            viewsHandler(page, title, null);
         }
 
         // linking posts to profile pages by clicking on username or their pictures
@@ -1540,6 +1595,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         // Then function for routing to profile page
 
         function routeToProfilePage(profUsername) {
+            console.log(targetUser, profUsername);
             if (targetUser === profUsername) {
                 isMainUser = true;
 
@@ -1602,6 +1658,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     type: "PUT",
                     dataType: "json",
                     data: JSON.stringify({ postId: postId, status: status }),
+                    contentType: "application/json; charset=utf-8",
                     headers: {
                         "X-CSRFToken": token,
                         "X-Requested-With": "XMLHttpRequest",
@@ -1734,7 +1791,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 .find(post_message_class)
                                 .html(),
                         };
-                        console.log(postInfo);
+
                         handleCommentFunctionality(postId, postInfo, postCon);
                     });
             });
@@ -1751,7 +1808,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             };
             $(".comment-box-popup").html(commentBoxTemplate(postInfo));
             $(".comment-box-popup")
-                .find("i.fa-times")
+                .find(".cancel-comment div.icon-times")
                 .off("click")
                 .on("click", function () {
                     $(".popup-dark").hide();
@@ -1782,16 +1839,19 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         function sendCommentToBackend(postId, postCon, fromDiscussion = false) {
             let token = $("#csrf").val();
+            let message = {
+                postId: postId,
+                message: fromDiscussion
+                    ? $("#reply-editable-input").val()
+                    : $("#commentInputForDiv").val(),
+            };
+            let jsonMessage = JSON.stringify(message);
             $.ajax({
                 url: "/handle_comments",
                 type: "PUT",
                 dataType: "json",
-                data: JSON.stringify({
-                    postId: postId,
-                    message: fromDiscussion
-                        ? $("#reply-editable-input").val()
-                        : $("#commentInputForDiv").val(),
-                }),
+                data: jsonMessage,
+                contentType: "application/json; charset=utf-8",
                 headers: {
                     "X-CSRFToken": token,
                     "X-Requested-With": "XMLHttpRequest",
@@ -1811,16 +1871,20 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             $(commentSpan).removeClass("like-count-animate");
                         }, 420);
                     }, 1000);
+
                     $(".comment-icon").each((index, icon) => {
-                        if (+$(icon).attr("data-postPk") === postId) {
+                        if (+$(icon).attr("data-postPk") == postId) {
                             $(icon)
                                 .siblings("span.comment-count")
                                 .text(data.commentNum);
                         }
                     });
-                    if (!fromDiscussion) {
-                        updateCommentsInfo(postId);
+                    if (fromDiscussion) {
+                        $(".reply-editable div[contenteditable=true]").html("");
+                        $("#reply-editable-input").val("");
+                        $(".reply-accessories button").prop("disabled", true);
                     }
+                    updateCommentsInfo(postId);
                 }
             });
         }
@@ -1846,7 +1910,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             let commentBox = `
                 <div class= 'commentBox'>
                     <div class='cancel-comment'>
-                        <i class="fas fa-times"></i>
+                        <div class="icon-times">
+                             <svg viewBox="0 0 15 15" aria-hidden="true" class="r-3xi3v6 r-4qtqp9 r-yyyyoo r-1or9b2r r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-5soawk"><g><path d="M8.914 7.5l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L7.5 6.086 1.707.293c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L6.086 7.5.293 13.293c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L7.5 8.914l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L8.914 7.5z"></path></g>
+                             </svg>
+                        </div>
+                        
                     </div>
                     <div class='comment-post'>
 
@@ -1941,6 +2009,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 "keyup",
                 function () {
                     $("#reply-editable-input").val($(this).html());
+
                     if ($(this).text().trim().length > 0) {
                         $(".reply-accessories button").prop("disabled", false);
                     } else {
@@ -1963,11 +2032,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         $(".discussion-body-container"),
                         true
                     );
-                    $(".reply-editable div[contenteditable=true]").html("");
-                    $("#reply-editable-input").val("");
 
                     // Update comment information on discussion page...
-                    updateCommentsInfo(postId);
+                    // updateCommentsInfo(postId);
                 });
 
             $.ajax({
@@ -1977,6 +2044,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 data: JSON.stringify({
                     postId: postId,
                 }),
+                contentType: "application/json; charset=utf-8",
                 headers: {
                     "X-CSRFToken": token,
                     "X-Requested-With": "XMLHttpRequest",
@@ -2162,6 +2230,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         }
 
         function commentContainerUpdate(data) {
+            console.log("rendered");
             interactionsUpdate(data);
             $(".reply-info").hide();
             $(".reply-editable").css("flex-basis", "80%");
@@ -2192,6 +2261,228 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         function updateCommentsInfo(postId) {
             discussionAjax(postId, true);
+        }
+
+        // Enable search functionality with search the search input
+
+        var searchInput = $(".submain-3-search .search-input");
+        var searchInputForm = $(".submain-3-search .search-input-form");
+        $(searchInput).val("");
+        var searchPopup = $(".search-popup");
+        // Listen for the event where the search input field is focused into
+        $(searchInput).on("focusin", function () {
+            $(searchPopup).show();
+            if ($(searchInput).val().length > 0)
+                $(".cancel-search-inp").css("display", "flex");
+            else $(".cancel-search-inp").hide();
+        });
+        $(searchInput).on("focusout", function (e) {
+            e.preventDefault();
+            $("body")
+                .off("click")
+                .on("click", (e) => {
+                    if (!$(e.target).closest(".submain-3-search").length) {
+                        $(searchPopup).hide();
+                        $(".cancel-search-inp").hide();
+                    }
+                });
+        });
+        $(".cancel-search-inp")
+            .off("click")
+            .on("click", function () {
+                $(searchInput).val("");
+                $(this).hide();
+                $(".search-placeholder").show();
+                $(".suggestion-box-container").hide();
+                $(".suggestion-users-box-container").empty();
+            });
+        // Listen for the event where the search input is being typed into
+        $(searchInput).on("keyup", function () {
+            let q = $(searchInput).val();
+            if (q.length > 0) {
+                $(".cancel-search-inp").css("display", "flex");
+                $(".search-placeholder").hide();
+                $(".suggestion-box-container").show();
+                $(".search-query-string").text(`"${q}"`);
+                searchQ = new URLSearchParams({ query: q.trim() });
+                $.ajax({
+                    url: `/query_search?${searchQ}`,
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                }).done((data) => {
+                    if (data["num_match"] > 0) {
+                        $(".suggestion-users-box-container").html(
+                            suggestedUsersTemplate(data.users)
+                        );
+                    } else {
+                        $(".suggestion-users-box-container").html(
+                            `<span class='search-for-message'>Search for "${q}"<span>`
+                        );
+                    }
+                });
+            } else {
+                $(".cancel-search-inp").hide();
+                $(".search-placeholder").show();
+                $(".suggestion-users-box-container").empty();
+                $(".suggestion-box-container").hide();
+            }
+        });
+
+        // creating a function to format the suggestions based on the search input
+
+        function suggestedUsersTemplate(data) {
+            let suggestionDiv = $("<div>");
+            $(suggestionDiv).addClass("suggestion-users-box");
+
+            $.each(data, function (index, user) {
+                let template = `
+                <div class="suggestion-user">
+                    <img src= "${user.pic}">
+                    <div class="suggestion-user-info">
+                        <div class="suggestion-user-name">
+                            <span class="suggestion-user-fullname">${
+                                user.fullName
+                            }</span>
+                            <span class="suggestion-user-username">${
+                                user.username
+                            }</span>
+                        </div>
+                        <div class="suggestion-user-addInfo">
+                            ${checkIfUserIsFollowing(user)}
+                        </div>
+                    </div>
+                </div>
+            
+                `;
+
+                $(suggestionDiv).append(template);
+            });
+            $(suggestionDiv)
+                .find(".suggestion-user")
+                .each(function (index, value) {
+                    $(value)
+                        .off("click")
+                        .on("click", function () {
+                            console.log("clicked oo");
+                            let usernameClicked = $(value)
+                                .find(".suggestion-user-username")
+                                .text()
+                                .trim();
+                            routeToProfilePage(usernameClicked.toLowerCase());
+                            $(searchPopup).hide();
+                            $(".cancel-search-inp").hide();
+                        });
+                });
+
+            return suggestionDiv;
+        }
+
+        // A function to check if the suggested user is following the authenticated user or not
+
+        function checkIfUserIsFollowing(user) {
+            let msg;
+            let authUsername = targetUser.trim().toLowerCase();
+            if (
+                user.followers.includes(authUsername) &&
+                user.following.includes(authUsername)
+            ) {
+                msg = `<svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="r-111h2gw r-4qtqp9 r-yyyyoo r-tbmifm r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-16eto9q"
+                        >
+                        <g>
+                            <path d="M12.225 12.165c-1.356 0-2.872-.15-3.84-1.256-.814-.93-1.077-2.368-.805-4.392.38-2.826 2.116-4.513 4.646-4.513s4.267 1.687 4.646 4.513c.272 2.024.008 3.46-.806 4.392-.97 1.106-2.485 1.255-3.84 1.255zm5.849 9.85H6.376c-.663 0-1.25-.28-1.65-.786-.422-.534-.576-1.27-.41-1.968.834-3.53 4.086-5.997 7.908-5.997s7.074 2.466 7.91 5.997c.164.698.01 1.434-.412 1.967-.4.505-.985.785-1.648.785z"></path>
+                        </g>
+                    </svg>
+                You Follow each other`;
+            } else if (
+                user.followers.includes(authUsername) &&
+                !user.following.includes(authUsername)
+            ) {
+                msg = `
+                    <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    class="r-111h2gw r-4qtqp9 r-yyyyoo r-tbmifm r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-16eto9q"
+                    >
+                        <g>
+                            <path d="M12.225 12.165c-1.356 0-2.872-.15-3.84-1.256-.814-.93-1.077-2.368-.805-4.392.38-2.826 2.116-4.513 4.646-4.513s4.267 1.687 4.646 4.513c.272 2.024.008 3.46-.806 4.392-.97 1.106-2.485 1.255-3.84 1.255zm5.849 9.85H6.376c-.663 0-1.25-.28-1.65-.786-.422-.534-.576-1.27-.41-1.968.834-3.53 4.086-5.997 7.908-5.997s7.074 2.466 7.91 5.997c.164.698.01 1.434-.412 1.967-.4.505-.985.785-1.648.785z"></path>
+                        </g>
+                    </svg>
+                
+                Following`;
+            } else if (
+                !user.followers.includes(authUsername) &&
+                user.following.includes(authUsername)
+            ) {
+                msg = `
+                    <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    class="r-111h2gw r-4qtqp9 r-yyyyoo r-tbmifm r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-16eto9q"
+                    >
+                        <g>
+                            <path d="M12.225 12.165c-1.356 0-2.872-.15-3.84-1.256-.814-.93-1.077-2.368-.805-4.392.38-2.826 2.116-4.513 4.646-4.513s4.267 1.687 4.646 4.513c.272 2.024.008 3.46-.806 4.392-.97 1.106-2.485 1.255-3.84 1.255zm5.849 9.85H6.376c-.663 0-1.25-.28-1.65-.786-.422-.534-.576-1.27-.41-1.968.834-3.53 4.086-5.997 7.908-5.997s7.074 2.466 7.91 5.997c.164.698.01 1.434-.412 1.967-.4.505-.985.785-1.648.785z"></path>
+                        </g>
+                    </svg>
+                    Follows you
+                `;
+            } else {
+                msg = user.about
+                    ? `${user.about.substr(0, 20)}...`
+                    : `${user.followers.length} Followers`;
+            }
+            return msg;
+        }
+        // Handle when the form is submitted
+
+        $(searchInputForm).on("submit", function (e) {
+            e.preventDefault();
+        });
+
+        // Link top users to Profile Page and Following page...
+        linkTopUsersToProfile($(".topUsers_list_container .top_user"));
+        function linkTopUsersToProfile(container) {
+            $(container).each(function (index, con) {
+                let containerUsername = $(con)
+                    .find(".top_user_username")
+                    .text()
+                    .trim()
+                    .toLowerCase();
+
+                let followersSpan = $(con).find(".topUserFollowersSpan");
+                let followingSpan = $(con).find(".topUserFollowingSpan");
+                $(con)
+                    .off("click")
+                    .on("click", function () {
+                        routeToProfilePage(containerUsername);
+                    });
+
+                $(followersSpan)
+                    .off("click")
+                    .on("click", function (e) {
+                        e.stopPropagation();
+                        followPageRouting(
+                            "followers",
+                            "Followers",
+                            containerUsername
+                        );
+                    });
+                $(followingSpan)
+                    .off("click")
+                    .on("click", function (e) {
+                        e.stopPropagation();
+                        followPageRouting(
+                            "following",
+                            "Following",
+                            containerUsername
+                        );
+                    });
+            });
         }
     });
 });

@@ -125,6 +125,7 @@ body {
     position: absolute;
     background-color: rgb(30, 30, 31, 0.8);
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     top: 0;
     left: -500px;
     width: 80%;
@@ -162,6 +163,7 @@ body {
 .submain-2 > header {
     background-color: rgba(0, 0, 0, 0.68);
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     position: fixed;
     top: 0;
     left: 0;
@@ -217,10 +219,18 @@ body {
     width: 100%;
     padding: 9px 14px;
 }
-.comment-box-popup .commentBox .cancel-comment i {
-    font-size: 18px;
-    color: white;
+.comment-box-popup .commentBox .cancel-comment div.icon-times {
     cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    height: 30px;
+    width: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+}
+.commentBox .cancel-comment div.icon-times svg {
+    width: 12px;
+    fill: white;
 }
 .comment-box-popup .commentBox .comment-content {
     display: flex;
@@ -305,6 +315,7 @@ body {
 .body-overlay {
     background: rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     height: 100vh;
     width: 100%;
     z-index: 9;
@@ -542,19 +553,25 @@ body {
     color: whitesmoke;
 }
 
-.edit-profile-header i {
+.edit-profile-header .icon-times {
     font-size: 16px;
     display: inline-block;
     height: 30px;
     text-align: center;
     line-height: 30px;
     width: 30px;
+
     transition: 0.3s ease-in;
     cursor: pointer;
     border-radius: 50%;
 }
-.edit-profile-header i:hover,
-.img-crop-submain .img-crop-btn i:hover {
+.edit-profile-header .icon-times svg {
+    width: 12px;
+    fill: whitesmoke;
+}
+.edit-profile-header .icon-times:hover,
+.img-crop-submain .img-crop-btn i:hover,
+.commentBox .cancel-comment div.icon-times:hover {
     background-color: rgba(207, 205, 205, 0.1);
 }
 
@@ -850,6 +867,7 @@ textarea {
     padding-top: 9px;
     background-color: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     min-height: 120px;
     box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.1);
     border-radius: 12px;
@@ -1087,6 +1105,7 @@ textarea {
     flex-basis: 100%;
     background-color: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     color: whitesmoke;
     border: none;
     box-shadow: 0px 0px 4px rgba(88, 88, 88, 0.2);
@@ -1100,6 +1119,7 @@ textarea {
     background: #f1ec40;
     margin-top: 10px;
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     color: rgb(46, 43, 43);
     border: none;
     border-radius: 8px;
@@ -1263,6 +1283,7 @@ footer a {
     color: whitesmoke;
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(19px);
+    -webkit-backdrop-filter: blur(19px);
     text-decoration: none;
     border: none;
     transition: 0.4s ease-in-out;
@@ -1595,13 +1616,15 @@ form .form-group .form-container div span {
 .individual-comment-posted {
     padding: 16px 25px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     flex-flow: row wrap;
     border-bottom: 1px solid gray;
 }
 .individual-comment-posted .individual-comment-user-pics {
     flex-basis: 6%;
     /* flex-basis: 8%; */
+
+    margin-top: 10px;
 }
 .individual-comment-posted .individual-comment-user-pics img {
     height: 45px;
@@ -1635,6 +1658,8 @@ form .form-group .form-container div span {
 }
 .individual-comment-body .individual-comment-message {
     padding-top: 14px;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 /*************************************** Discussion Styling Ends **************************************/
 /* REGISTER FORM ENDS */
@@ -1942,8 +1967,98 @@ form .form-group .form-container div span {
     }
     .submain-3 .submain-3-search {
         flex-basis: 8%;
+        position: relative;
     }
-
+    .search-popup {
+        position: absolute;
+        width: 100%;
+        min-height: 100px;
+        max-height: 450px;
+        overflow-x: none;
+        overflow-y: auto;
+        z-index: 18;
+        background: rgb(26, 26, 26);
+        border-radius: 10px;
+        box-shadow: 0px 0px 5px 2px rgba(255, 255, 255, 0.1);
+        color: whitesmoke;
+        display: none;
+    }
+    .search-placeholder {
+        margin-top: 10px;
+        width: 100%;
+        padding: 10px 12px;
+        text-align: center;
+        font-size: 14px;
+        color: rgb(202, 202, 202);
+    }
+    .suggestion-box-container {
+        display: none;
+        width: 100%;
+        margin-top: 4px;
+    }
+    .search-query-string-container,
+    .suggestion-users-box-container {
+        padding: 12px 14px;
+    }
+    .search-query-string-container {
+        font-size: 15px;
+    }
+    .suggestion-users-box-container {
+        padding-top: 9px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .suggestion-users-box-container .suggestion-user {
+        display: flex;
+        cursor: pointer;
+        transition: background-color 0.4s ease-in-out;
+    }
+    .search-for-message,
+    .suggestion-user {
+        padding: 16px 14px;
+    }
+    .suggestion-user img {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+    }
+    .suggestion-user .suggestion-user-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0px 10px;
+    }
+    .suggestion-user-info .suggestion-user-name {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        width: 100%;
+    }
+    .suggestion-user-name .suggestion-user-fullname {
+        font-weight: 600;
+        line-height: 22px;
+    }
+    .suggestion-user-name .suggestion-user-username {
+        color: rgb(202, 202, 202);
+        font-size: 15px;
+        line-height: 22px;
+    }
+    .suggestion-user-info .suggestion-user-addInfo {
+        color: rgb(202, 202, 202);
+        font-size: 14px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        line-height: 22px;
+    }
+    .suggestion-user-addInfo svg {
+        width: 18px;
+        padding-right: 5px;
+        padding-top: 1px;
+        fill: rgb(202, 202, 202);
+    }
     .submain-3 .submain-3-search form {
         height: 100%;
         display: flex;
@@ -1963,18 +2078,102 @@ form .form-group .form-container div span {
     }
 
     .submain-3 .submain-3-search form input {
-        flex-basis: 80%;
+        flex: 1;
         height: 70%;
         border: none;
         background-color: transparent;
         color: whitesmoke;
         font-size: 17px;
+        padding: 10px 6px;
+    }
+    .submain-3 .submain-3-search form .cancel-search-inp {
+        background-color: #f1ec40;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-right: 16px;
+        display: none;
+    }
+    .submain-3 .submain-3-search form svg {
+        width: 12px;
     }
 
     .submain-3 .submain-3-search form input:focus {
         outline: none;
     }
+    .submain-3-topUsers {
+        flex: 1;
+        border-radius: 9px;
+        box-shadow: 0px 0px 5px 1.5px rgba(255, 255, 255, 0.08);
+        padding: 3px 16px;
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+    .topUsers_list_container {
+        height: 100%;
+        flex: 1;
+        padding-top: 10px;
+    }
+    .topUsers_list_container .top_user {
+        display: flex;
+        align-items: center;
+        padding: 15px 1px;
+        border-bottom: 1px solid rgb(175, 174, 174);
+        transition: background-color 0.4s ease-in;
+    }
+    .topUsers_list_container .top_user:hover,
+    .suggestion-user:hover {
+        background-color: rgba(218, 218, 218, 0.07);
+    }
 
+    .topUsers_list_container .top_user img {
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .topUsers_list_container .top_user .top_user_info {
+        padding-left: 12px;
+        color: whitesmoke;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .top_user_info .top_user_follow {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        padding-top: 5px;
+    }
+    .top_user_info .top_user_follow span {
+        font-size: 14px;
+        color: rgb(210, 210, 210);
+        cursor: pointer;
+    }
+    .top_user_info .top_user_follow span:hover {
+        text-decoration: underline;
+    }
+
+    .top_user_info .top_user_follow span:last-child {
+        margin-left: 8px;
+    }
+    .top_user_info .top_user_username {
+        flex: 1;
+    }
+    .top_user_info .top_user_username span {
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .top_user_info .top_user_username span:hover {
+        text-decoration: underline;
+    }
     .submain-3 h1 {
         color: whitesmoke;
     }
@@ -2003,7 +2202,7 @@ form .form-group .form-container div span {
         font-size: 16px;
     }
     .edit-profile-header h1 {
-        margin-left: -200px;
+        margin-left: -300px;
     }
     .comment-box-popup {
         width: 50%;

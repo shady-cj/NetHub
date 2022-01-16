@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt,ensure_csrf_cookie
 from django.db import IntegrityError
-from django.db.models import F
+from django.db.models import F,Q
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse,Http404
 from .utils import ExtendedEncoder,ConvertB64ToImage
 from django.shortcuts import render,get_object_or_404
@@ -32,6 +32,7 @@ def index(request,page='home'):
         
         else:
 
+
             if not os.path.exists(request.user.profile_picture.path):
                 request.user.profile_picture = 'user_images/default.png'
                 request.user.save()
@@ -57,13 +58,22 @@ def index(request,page='home'):
                     'user':request.session['currentUser'],
                     'post':request.session['postId'] 
                 }
+            
+            users_list = []
+            for u in User.objects.all():
+                user_dict = {'user':u,'post_count':u.posts.all().count() }
+                users_list.append(user_dict)
+            
+            top_users_list = sorted(users_list, key = lambda x :x['post_count'], reverse=True)[:5]
+          
             return render(request, "NetHubApp/index.html",{
                 "posts":posts.order_by("-post_date").all(),
                 "custom_posts":custom_posts,
                 "page":page_name,
                 "follow":None,
-                'discussion':discussion
-            
+                "discussion":discussion,
+                "users_lists":top_users_list
+
             })
             
     else:
@@ -79,7 +89,6 @@ def discussionPage(request,username,postId):
     try:
         post = Post.objects.get(id = int(postId))
         user = User.objects.get(username = username.lower().strip())
-        print(post, user)
         if post and user:
             request.session['currentUser'] = user.username
             request.session['postId'] = post.id
@@ -138,6 +147,13 @@ def UsersInfoPage(request,username,page):
                 
             num_followers =  getuser.followers.all().count()
             num_following = getfollow.following.all().count()
+
+            users_list = []
+            for u in User.objects.all():
+                user_dict = {'user':u,'post_count':u.posts.all().count() }
+                users_list.append(user_dict)
+            
+            top_users_list = sorted(users_list, key = lambda x :x['post_count'], reverse=True)[:5]
             return render(request, "NetHubApp/index.html",{
                 "page":page_name,
                 "posts":posts.order_by("-post_date").all(),
@@ -150,6 +166,7 @@ def UsersInfoPage(request,username,page):
                 "follow_obj":getfollow,
                 "num_followers":num_followers,
                 "num_following":num_following,
+                "users_lists":top_users_list
 
             })
 
@@ -158,7 +175,7 @@ def UsersInfoPage(request,username,page):
 @login_required
 def indexAjax(request,page):
     posts = Post.objects.all().order_by("-post_date").all()
-    allowed_pages = ['home','bookmarks','following_posts','following','followers','profile']
+    allowed_pages = ['home','bookmarks','following_posts','following','followers','profile','search']
     
     if page in allowed_pages:
         profpic_empty = False
@@ -223,6 +240,22 @@ def indexAjax(request,page):
     else:
         return  JsonResponse({'error':'error'})
 
+
+def querySearch(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax and request.method == 'GET':
+        data = request.GET
+        query = data.get('query')
+        users = User.objects.filter(Q(username__icontains = query)|Q(first_name__icontains= query)|Q(last_name__icontains= query))
+        posts = Post.objects.filter(post_content__icontains = query)
+
+
+
+        users = [user.serialize() for user in users] 
+        return JsonResponse({'users':users,'num_match':len(users) })
+        
+        
+
 @login_required
 def getUserInfo(request):
     try:
@@ -254,11 +287,12 @@ def create_post(request,):
         return JsonResponse({'message':'An error occured.. wrong request'})
 @login_required
 def edit_post(request,post_id):
-    if request.method == "POST":
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax and request.method == "POST":
         post = get_object_or_404(Post,pk=post_id)
-        # print(request.POST)
-        post_content = request.POST.get('post_content')
-        
+        data = json.load(request)
+        post_content =data.get('post_content')
+        # post_content = request.POST.get('post_content')
         Post.objects.filter(id=post_id).update(post_content=post_content,Edited=True)
         return JsonResponse({'edited':True})
         
@@ -301,6 +335,9 @@ def updateProfile(request,username):
             'November':11,
             'December':12
             }
+            
+        print(dob)
+        
         if dob != "":
             convertStr = dob.replace(',','')
             formatDate = convertStr.split(' ')
@@ -317,7 +354,6 @@ def updateProfile(request,username):
             getUser.about= about
             getUser.Date_of_Birth = dob
             getUser.save()
-            print(getUser.Date_of_Birth)
 
 
             if pics != None:
@@ -441,6 +477,7 @@ def handleLike(request):
                 getPost.liked_by.add(request.user)
                 getPost.post_likes = F('post_likes') + 1
                 getPost.save()
+                getPost.refresh_from_db()
                 message = 'liked successfully'
 
         elif status == 'unlike':
@@ -448,6 +485,7 @@ def handleLike(request):
                 getPost.liked_by.remove(request.user)
                 getPost.post_likes = F('post_likes') - 1
                 getPost.save()
+                getPost.refresh_from_db()
                 message = 'unliked successfully'
         
         getPost =  Post.objects.get(id = getPost.id)
@@ -458,10 +496,9 @@ def handleLike(request):
 def handleComments(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax and request.method == 'PUT':
-        data = json.load(request)
+        data = json.load(request)     
         post_id = data.get('postId')
         comment_message = data.get('message')
-        
         try:
             getPost = Post.objects.get(id= int(post_id))
         except Post.DoesNotExist:

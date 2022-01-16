@@ -13,6 +13,7 @@ urlpatterns = [
     path("handle_like",views.handleLike, name='handleLike'),
     path("handle_comments",views.handleComments, name= 'handleComments'),
     path("comment_page",views.comment_page,name='comment_page'),
+    path("query_search",views.querySearch,name='query'),
     path("edit_post/<int:post_id>",views.edit_post, name="edit_post"),
     path("get_current_user/",views.getUserInfo,name='get_user'),
     path("updateUser/<str:username>", views.updateProfile, name='update-profile'),

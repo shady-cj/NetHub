@@ -104,13 +104,58 @@
                 <!--  -->
                 {% if user.is_authenticated %}
                     <div class="submain-3-search">
-                        <form action="" method="">
+                        <form class ='search-input-form' action="" method="">
                             <button type ='submit'><i class="fi fi-rr-search"></i></button>
-                            <input type="text" placeholder="Search NetHub">
+                            <input class='search-input' type="text" placeholder="Search NetHub">
+                            <div class='cancel-search-inp'>
+                                <svg viewBox="0 0 15 15" aria-hidden="true" class="r-3xi3v6 r-4qtqp9 r-yyyyoo r-1or9b2r r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-5soawk"><g><path d="M8.914 7.5l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L7.5 6.086 1.707.293c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L6.086 7.5.293 13.293c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L7.5 8.914l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L8.914 7.5z"></path></g></svg>
+                            </div>
                         </form>
+                        <div class="search-popup">
+                            <div class= 'search-placeholder'>
+                                Try searching for people or keywords
+                            </div>
+                            <section class='suggestion-box-container'>
+                                <div class='search-query-string-container'>Search Result for 
+                                    <span class='search-query-string'></span>
+                                </div>
+                                <div class= "suggestion-users-box-container">
+                                </div>
+                            </section>
+                        </div>
                         
 
                     </div>
+                    <div class="submain-3-topUsers">
+                        <h1>Top Users</h1>
+                        <div class= 'topUsers_list_container'>
+                            {% for top_user in users_lists %}
+                                <div class='top_user'>
+                            
+                                    <img src= "{{top_user.user.profile_picture.url}}"/>
+                                    
+                                    <div class= 'top_user_info'>
+                                        <div class='top_user_username'><span>{{top_user.user.username.capitalize}}</span></div>
+                                        <div class='top_user_follow'>
+                                            <span class='topUserFollowingSpan'>
+                                                Following:&nbsp;{{top_user.user.user_following.all.first.following.all.count}}
+                                            </span> 
+                                            <span class='topUserFollowersSpan'>
+                                                Followers:&nbsp;{{top_user.user.followers.all.count}}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            {% empty %}
+                                <div class='top_user'>
+                            
+                                    <h1>No Top Users Yet</h1>
+                                </div>
+                            {% endfor %}
+
+                        </div>
+                    </div> 
                 {% else %}
                     <h1>LET'S GET YOU STARTED</h1>
 
