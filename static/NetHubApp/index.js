@@ -78,7 +78,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 e.preventDefault();
                 let url = $(form).attr("action");
                 payload = JSON.stringify({
-                    post_content: $(inputContent).val(),
+                    post_content: $(inputContent).val().trim(),
                     post_image: null,
                 });
                 mobileNewPostCon.css("left", "150%");
@@ -2818,10 +2818,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 .each(function (index, postCont) {
                     let regex = new RegExp(search_query, "gi");
 
-                    //   .replaceAll(
-                    //         currentSearchQuery,
-                    //
-                    //     );
                     let matchedText = $(postCont).find(".post-message").text();
 
                     let replacedText = matchedText.replaceAll(
@@ -2854,7 +2850,3 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         }
     });
 });
-// showActiveView(".discussion-wrapper");
-// 192.168.13.64
-
-//
