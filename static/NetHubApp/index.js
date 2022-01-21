@@ -4,9 +4,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         var subMain = $(".submain-1");
         var footerLinks = $("footer a");
         var editBtnIcon = $(".fi-rr-pencil");
-        var searchForm = $(".submain-3 .submain-3-search form");
-        var searchField = $(searchForm).find("input");
-        var searchIcon = $(searchForm).find("button");
+        var searchForm = $(".search-form .search-input-form");
         var newPostTextarea = $(".textarea");
 
         var mobileNewPostBtn = $(".new-post-mobile-btn");
@@ -14,6 +12,17 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         var bookmarkBtn = $(
             ".post-container .post-content .post-info .bookmark-btn"
         );
+
+        // Function To Close Search page when any nav link is clicked
+        function closeSearchPage() {
+            let locationArray = location.href.split("/");
+            if (locationArray.length === 4) {
+                if (locationArray[3].match(/search/)) {
+                    closeMainSearchPage();
+                }
+            }
+        }
+
         addToBookmark(bookmarkBtn);
         $(mobileNewPostBtn).click(function (e) {
             e.preventDefault();
@@ -62,23 +71,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 }
             });
         }
-
-        // rendering text inside of contenteditable div
-        // function renderToText(content) {
-        //     div = $(content);
-        //     if (div.innerText) {
-        //         text = div.innerText;
-        //     } else {
-        //         escapedText = $(div)
-        //             .html()
-        //             .replace(/(?:\r\<br\>|\r|\<br\>)/g, "\n")
-        //             .replace(/(\<([^\>]+)\>)/gi, "");
-        //         text = decodeURIComponent(escapedText);
-        //     }
-        //     console.log(text);
-        //     return text;
-        // }
-
         // Adding new post asynchronously
 
         function addNewPost(form, inputContent, textDiv, postBtn) {
@@ -118,6 +110,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         let postCon = $("<div>");
                         $(postCon).addClass("post-container");
                         $(postCon).addClass("viewProfilerContainer");
+
                         $(postCon).html(template);
                         $(postCon).css({
                             height: "0px",
@@ -135,11 +128,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             $(postCon).css({
                                 height: "auto",
                                 minHeight: "120px",
-                                marginTop: "8px",
+                                marginTop: "20px",
                                 paddingTop: "9px",
                             });
                             $(postCon).removeClass("animateNewPost");
                         }, 1000);
+                        postToProfileEventHandler($(postCon));
                         editEvent($(postCon).find(".fi-rr-pencil"));
                         addToBookmark($(postCon).find(".bookmark-btn"));
                         addEventToLikeBtns(postCon);
@@ -150,13 +144,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             });
         }
 
-        // $(newPostBtn).click(function(){
-        //     console.log('clicked')
-        // })
-
         $.each(footerLinks, function (index, link) {
             $(link).on("click", function (e) {
                 e.preventDefault();
+
+                closeSearchPage();
                 $("header").show();
 
                 var page = $(this).attr("data-footerLink");
@@ -165,13 +157,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
                 viewsHandler(page, historyTitle, this);
                 addActive(footerLinks, this, "footer-active");
-                if (page !== "search") {
-                    addActive(
-                        mainNavLinks,
-                        mainNavLinks.filter(`[data-link=${page}]`),
-                        "active-link"
-                    );
-                }
+
+                addActive(
+                    mainNavLinks,
+                    mainNavLinks.filter(`[data-link=${page}]`),
+                    "active-link"
+                );
             });
         });
         editEvent(editBtnIcon);
@@ -283,22 +274,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             });
         }
 
-        $(searchField).focusin(function () {
-            $(searchForm).css({
-                "background-color": "rgb(32, 32, 32)",
-                border: " 1px solid #f1ec40",
-            });
-            $(searchIcon).css("color", "#f1ec40");
-        });
-
-        $(searchField).focusout(function () {
-            $(searchForm).css({
-                "background-color": "rgb(68, 67, 67)",
-                border: "none",
-            });
-            $(searchIcon).css("color", "whitesmoke");
-        });
-
         $(hamIcon)
             .off("click")
             .on("click", function () {
@@ -408,6 +383,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         var mainView = $("#main-home-post-container");
         var profileView = $("#main-profile-section");
         var followView = $("#following-info-container");
+        var searchView = $("#main-search-view");
         var headerTitle = $(".header-title");
         var userOnlineId = $(".submain-1-username").attr("data-userId");
         var homePageOnload = true;
@@ -434,6 +410,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             var followHeaders = $(".follow-ind");
 
             changeFollowPage(followHeaders, activeUrl.trim());
+        }
+        if (activeUrl.trim() === "Search") {
+            $("header").hide();
+            console.log("showing Search view");
+            showActiveView(searchView);
         }
 
         function changeFollowPage(followHeaders, page) {
@@ -543,6 +524,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         "Home",
                         "Following Posts",
                         "Bookmarks",
+                        "Search",
                     ];
                     if (pages_for_footer.includes(navLinkName)) {
                         addActive(
@@ -560,6 +542,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
             $(navLink).on("click", function (e) {
                 e.preventDefault();
+                closeSearchPage();
                 $("header").show();
                 var page = $(this).attr("data-link");
                 var historyTitle = $(this).text();
@@ -571,7 +554,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         function viewsHandler(page, historyTitle, clickedLink) {
             var emptyMessage;
-            let pages_for_footer = ["home", "following_posts", "bookmarks"];
+            let pages_for_footer = [
+                "home",
+                "following_posts",
+                "bookmarks",
+                "search",
+            ];
             if (clickedLink !== null)
                 addActive(mainNavLinks, clickedLink, "active-link");
             if (pages_for_footer.includes(page)) {
@@ -638,6 +626,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         "<h3 class='empty-post'> User haven't made any post yet</h3>";
                 }
                 showActiveView(profileView);
+            } else if (page === "search") {
+                $("header").hide();
+                showActiveView(searchView);
             } else {
                 showActiveView(altView);
                 emptyMessage = `<h1 class='empty-post'>No user you are following <br>has made a post </h1>`;
@@ -653,7 +644,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             $(activeView).show();
         }
 
-        function pushHistoryState(page, emptyMessage, discussionInfo = null) {
+        function pushHistoryState(
+            page,
+            emptyMessage,
+            discussionInfo = null,
+            searchQ = null
+        ) {
             infoPages = ["followers", "following", "profile"];
             let user = isMainUser ? targetUser : clickedUser;
             if (infoPages.includes(page)) {
@@ -664,9 +660,26 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 );
             } else if (page === "discussion") {
                 history.pushState(
-                    { page: page, discussionInfo: discussionInfo },
+                    {
+                        page: page,
+                        emptyMessage: emptyMessage,
+                        discussionInfo: discussionInfo,
+                    },
                     null,
                     `/${page}/${discussionInfo.user}/${discussionInfo.postId}`
+                );
+            } else if (page === "search" && searchQ) {
+                history.pushState(
+                    {
+                        page: page,
+                        emptyMessage: emptyMessage,
+                        searchQuery: searchQ,
+                    },
+                    null,
+                    `/${page}?${new URLSearchParams({
+                        query: searchQ.query,
+                        type: searchQ.type,
+                    })}`
                 );
             } else {
                 history.pushState(
@@ -1552,6 +1565,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         // For routing to the follow page either after calling the navToFollowPage function or after clicking on the follow information on top users page
         function followPageRouting(page, title, profileUser) {
+            $("header").show();
+
             if (targetUser === profileUser.toLowerCase()) {
                 isMainUser = true;
 
@@ -1595,7 +1610,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         // Then function for routing to profile page
 
         function routeToProfilePage(profUsername) {
-            console.log(targetUser, profUsername);
+            $("header").show();
             if (targetUser === profUsername) {
                 isMainUser = true;
 
@@ -2263,48 +2278,82 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             discussionAjax(postId, true);
         }
 
-        // Enable search functionality with search the search input
-
-        var searchInput = $(".submain-3-search .search-input");
-        var searchInputForm = $(".submain-3-search .search-input-form");
-        $(searchInput).val("");
-        var searchPopup = $(".search-popup");
-        // Listen for the event where the search input field is focused into
-        $(searchInput).on("focusin", function () {
-            $(searchPopup).show();
-            if ($(searchInput).val().length > 0)
-                $(".cancel-search-inp").css("display", "flex");
-            else $(".cancel-search-inp").hide();
-        });
-        $(searchInput).on("focusout", function (e) {
-            e.preventDefault();
-            $("body")
-                .off("click")
-                .on("click", (e) => {
-                    if (!$(e.target).closest(".submain-3-search").length) {
-                        $(searchPopup).hide();
-                        $(".cancel-search-inp").hide();
-                    }
-                });
-        });
-        $(".cancel-search-inp")
+        let searchViewBody = $(".search-view-body");
+        // Add click event to the search view result button if they are already in the DOM when the page loads...
+        $(searchViewBody)
+            .find(".search-view-result-posts")
             .off("click")
             .on("click", function () {
-                $(searchInput).val("");
-                $(this).hide();
-                $(".search-placeholder").show();
-                $(".suggestion-box-container").hide();
-                $(".suggestion-users-box-container").empty();
+                changeSearchType("posts");
             });
-        // Listen for the event where the search input is being typed into
-        $(searchInput).on("keyup", function () {
-            let q = $(searchInput).val();
-            if (q.length > 0) {
-                $(".cancel-search-inp").css("display", "flex");
-                $(".search-placeholder").hide();
-                $(".suggestion-box-container").show();
-                $(".search-query-string").text(`"${q}"`);
-                searchQ = new URLSearchParams({ query: q.trim() });
+        $(searchViewBody)
+            .find(".search-view-result-users")
+            .off("click")
+            .on("click", function () {
+                changeSearchType("users");
+            });
+
+        let searchViewTopUsers = $(".search-view-topUsers");
+
+        let currentSearchQuery = null;
+
+        // Enable search functionality with search the search input
+
+        $(searchForm).each(function (index, form) {
+            let searchField = $(form).find("input");
+            let searchIcon = $(form).find("button svg");
+            let searchPopup = $(searchField)
+                .closest(".search-input-form")
+                .siblings(".search-popup");
+            let cancelSearch = $(searchField).siblings(".cancel-search-inp");
+            let searchPlaceholder = $(searchField)
+                .closest(".search-input-form")
+                .siblings(".search-popup")
+                .find(".search-placeholder");
+
+            let suggestionBoxContainer = $(searchPlaceholder).siblings(
+                ".suggestion-box-container"
+            );
+
+            let suggestionUsersBoxContainer = $(suggestionBoxContainer).find(
+                ".suggestion-users-box-container"
+            );
+            let searchQueryString = $(suggestionBoxContainer).find(
+                ".search-query-string"
+            );
+
+            // Handle when the form is submitted
+
+            $(form).on("submit", function (e) {
+                let q = $(searchField).val();
+                e.preventDefault();
+                console.log("submitted");
+                showActiveView(searchView);
+                $("header").hide();
+                addActive(
+                    footerLinks,
+                    $(footerLinks).filter(`[data-footerLink='search']`),
+                    "footer-active"
+                );
+
+                addActive(
+                    mainNavLinks,
+                    $(mainNavLinks).filter(`[data-link='search']`),
+                    "active-link"
+                );
+
+                $(headerTitle).text("Search");
+                $("title").text(`NETHUB | SEARCH`);
+
+                pushHistoryState("search", null, null, {
+                    query: q.trim(),
+                    type: "posts",
+                });
+
+                let searchQ = new URLSearchParams({
+                    query: q.trim(),
+                    type: "posts",
+                });
                 $.ajax({
                     url: `/query_search?${searchQ}`,
                     type: "GET",
@@ -2313,27 +2362,107 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         "X-Requested-With": "XMLHttpRequest",
                     },
                 }).done((data) => {
-                    if (data["num_match"] > 0) {
-                        $(".suggestion-users-box-container").html(
-                            suggestedUsersTemplate(data.users)
-                        );
-                    } else {
-                        $(".suggestion-users-box-container").html(
-                            `<span class='search-for-message'>Search for "${q}"<span>`
-                        );
-                    }
+                    $(form).css({
+                        "background-color": "rgb(68, 67, 67)",
+                        border: "none",
+                    });
+                    $(searchIcon).css("fill", "whitesmoke");
+                    $(cancelSearch).hide();
+                    $(searchPopup).hide();
+                    $(searchViewTopUsers).addClass("hide-topUsers-view");
+                    $(searchViewBody).find(".search-view-result").show();
+                    $(searchViewBody).find(".search-view-result-header").show();
+                    currentSearchQuery = q;
+                    renderResultPage(data, "posts");
                 });
-            } else {
-                $(".cancel-search-inp").hide();
-                $(".search-placeholder").show();
-                $(".suggestion-users-box-container").empty();
-                $(".suggestion-box-container").hide();
-            }
+            });
+
+            // Listen for the event where the search input field is focused into
+
+            $(searchField).on("focusin", function () {
+                $(form).css({
+                    "background-color": "rgb(32, 32, 32)",
+                    border: " 1px solid #f1ec40",
+                });
+                $(searchIcon).css("fill", "#f1ec40");
+
+                $(searchPopup).show();
+                if ($(searchField).val().length > 0)
+                    $(cancelSearch).css("display", "flex");
+                else $(cancelSearch).hide();
+            });
+            $(searchField).on("focusout", function (e) {
+                e.preventDefault();
+                $(form).css({
+                    "background-color": "rgb(68, 67, 67)",
+                    border: "none",
+                });
+                $(searchIcon).css("fill", "whitesmoke");
+                $("body")
+                    .off("click")
+                    .on("click", (e) => {
+                        if (!$(e.target).closest(".search-form").length) {
+                            $(searchPopup).hide();
+                            $(cancelSearch).hide();
+                        }
+                    });
+            });
+            $(cancelSearch)
+                .off("click")
+                .on("click", function () {
+                    $(searchField).val("");
+                    $(this).hide();
+                    $(searchPlaceholder).show();
+                    $(suggestionBoxContainer).hide();
+                    $(suggestionUsersBoxContainer).empty();
+                });
+
+            $(searchField).val("");
+
+            // Listen for the event where the search input is being typed into
+
+            $(searchField).on("keyup", function () {
+                let q = $(searchField).val();
+
+                if (q.length > 0) {
+                    $(cancelSearch).css("display", "flex");
+                    $(searchPlaceholder).hide();
+                    $(suggestionBoxContainer).show();
+                    $(searchQueryString).text(`"${q}"`);
+                    searchQ = new URLSearchParams({
+                        query: q.trim(),
+                        type: "users",
+                    });
+                    $.ajax({
+                        url: `/query_search?${searchQ}`,
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                    }).done((data) => {
+                        if (data["num_match"] > 0) {
+                            $(suggestionUsersBoxContainer).html(
+                                suggestedUsersTemplate(data.result, searchPopup)
+                            );
+                        } else {
+                            $(suggestionUsersBoxContainer).html(
+                                `<span class='search-for-message'>Search for "${q}"<span>`
+                            );
+                        }
+                    });
+                } else {
+                    $(cancelSearch).hide();
+                    $(searchPlaceholder).show();
+                    $(suggestionUsersBoxContainer).empty();
+                    $(suggestionBoxContainer).hide();
+                }
+            });
         });
 
         // creating a function to format the suggestions based on the search input
 
-        function suggestedUsersTemplate(data) {
+        function suggestedUsersTemplate(data, searchPopup) {
             let suggestionDiv = $("<div>");
             $(suggestionDiv).addClass("suggestion-users-box");
 
@@ -2438,11 +2567,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             }
             return msg;
         }
-        // Handle when the form is submitted
-
-        $(searchInputForm).on("submit", function (e) {
-            e.preventDefault();
-        });
 
         // Link top users to Profile Page and Following page...
         linkTopUsersToProfile($(".topUsers_list_container .top_user"));
@@ -2476,6 +2600,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     .off("click")
                     .on("click", function (e) {
                         e.stopPropagation();
+
                         followPageRouting(
                             "following",
                             "Following",
@@ -2484,7 +2609,252 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     });
             });
         }
+
+        // Function to render search view result header based on the query Type
+
+        function loadSearchResultHeader(queryType) {
+            return `
+                <div class="search-view-result-header">
+                    <div class="search-view-result-posts ${
+                        queryType === "posts" && "search-view-result-active"
+                    }">
+                        <span>POSTS</span>
+                    </div>
+                    <div class= "search-view-result-users ${
+                        queryType === "users" && "search-view-result-active"
+                    }">
+                        <span>USERS</span> 
+                    </div> 
+                </div>`;
+        }
+
+        // Function to change the search type
+
+        function changeSearchType(queryType) {
+            let search_query;
+            if (currentSearchQuery === null) {
+                search_query = new URLSearchParams(location.search);
+                search_query = search_query.get("query");
+            } else {
+                search_query = currentSearchQuery;
+            }
+            pushHistoryState("search", null, null, {
+                query: search_query,
+                type: queryType,
+            });
+            let searchQ = new URLSearchParams({
+                query: search_query,
+                type: queryType,
+            });
+            $.ajax({
+                url: `/query_search?${searchQ}`,
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            }).done((data) => {
+                renderResultPage(data, queryType);
+            });
+        }
+
+        // add events to the back svg button when clicked
+        $(".search-back-navigator")
+            .off("click")
+            .on("click", closeMainSearchPage);
+
+        // Function To Render Search Result Page
+
+        function renderResultPage(data, queryType) {
+            let searchResultHeader;
+
+            $(".search-back-navigator").removeClass("hide-back-navigator");
+
+            if ($(".search-view-result-header").length === 0) {
+                searchResultHeader = loadSearchResultHeader(queryType);
+
+                $(searchViewBody).append(searchResultHeader);
+                $(searchViewBody).append(
+                    "<div class='search-view-result'></div>"
+                );
+            } else {
+                $(searchViewBody)
+                    .find(".search-view-result-header")
+                    .replaceWith(loadSearchResultHeader(queryType));
+            }
+
+            let searchViewWrapper = $(searchViewBody).find(
+                ".search-view-result"
+            );
+
+            $(searchViewWrapper).empty();
+            if (data.num_match > 0) {
+                $.each(data.result, function (index, result) {
+                    let template;
+                    // console.log(result);
+                    if (queryType === "posts") {
+                        let post_template = postTemplate(
+                            result,
+                            null,
+                            false,
+                            data.authUser
+                        );
+                        template = `
+                            <div class='post-container viewProfilerContainer' data-postId="${result.id}">
+                            ${post_template}
+                            </div>
+                        `;
+                    } else if (queryType === "users") {
+                        template = `
+                            <div class="search-result-user">
+                                <img src= "${result.pic}">
+                                <div class="search-result-user-info">
+                                    <div class="search-result-user-name">
+                                        <span class="search-result-user-fullname">
+                                            ${result.fullName}
+                                        </span>
+                                        <span class="search-result-user-username">
+                                            ${result.username}
+                                        </span>
+                                    </div>
+                                    <div class="search-result-user-addInfo">
+                                        <span class="search-result-user-following">
+                                            Following:&nbsp;${result.following.length}
+                                        </span>
+                                        <span class="search-result-user-follower">
+                                            Followers:&nbsp;${result.followers.length}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+            
+                        `;
+                        // console.log(template);
+                    }
+                    $(searchViewWrapper).append(template);
+                });
+
+                // Adding events to the post containers
+                if (queryType === "posts") {
+                    editEvent($(searchViewWrapper).find(".fi-rr-pencil"));
+                    addToBookmark($(searchViewWrapper).find(".bookmark-btn"));
+                    addEventToLikeBtns(
+                        $(searchViewWrapper).find(".post-container")
+                    );
+                    addEventToCommentBtns(
+                        $(searchViewWrapper).find(".post-container")
+                    );
+                    displayDiscussion(
+                        $(searchViewWrapper).find(".post-container")
+                    );
+                    postToProfileEventHandler(
+                        $(searchViewWrapper).find(".viewProfilerContainer")
+                    );
+                    // Make the match bold...d
+                    makeMatchedTextBold($(searchViewWrapper));
+                }
+
+                // Add event to Link each user search result to profile
+                if (queryType === "users") {
+                    $(searchViewWrapper)
+                        .find(".search-result-user")
+                        .each(function (index, value) {
+                            $(value)
+                                .off("click")
+                                .on("click", function () {
+                                    let containerUsername = $(value)
+                                        .find(".search-result-user-username")
+                                        .text()
+                                        .trim()
+                                        .toLowerCase();
+                                    routeToProfilePage(containerUsername);
+                                });
+                        });
+                }
+            } else {
+                let empty =
+                    '<h3 class="empty-post">No Result match your search </h3>';
+
+                $(searchViewWrapper).append(empty);
+            }
+            $(searchViewBody)
+                .find(".search-view-result-posts")
+                .off("click")
+                .on("click", function () {
+                    changeSearchType("posts");
+                });
+            $(searchViewBody)
+                .find(".search-view-result-users")
+                .off("click")
+                .on("click", function () {
+                    changeSearchType("users");
+                });
+        }
+
+        // Function to initiate when the svg back button is clicked
+
+        function closeMainSearchPage() {
+            $(".search-back-navigator").addClass("hide-back-navigator");
+            pushHistoryState("search", null, null);
+            $(searchViewTopUsers).removeClass("hide-topUsers-view");
+            $(searchViewBody).find(".search-view-result").hide();
+            $(searchViewBody).find(".search-view-result-header").hide();
+        }
+
+        // Function to make the matched search text bold
+        makeMatchedTextBold($(".search-view-result"));
+
+        function makeMatchedTextBold(targetContainer) {
+            let search_query;
+            if (currentSearchQuery === null) {
+                search_query = new URLSearchParams(location.search);
+                search_query = search_query.get("query");
+            } else {
+                search_query = currentSearchQuery;
+            }
+            $(targetContainer)
+                .find(".post-container")
+                .each(function (index, postCont) {
+                    let regex = new RegExp(search_query, "gi");
+
+                    //   .replaceAll(
+                    //         currentSearchQuery,
+                    //
+                    //     );
+                    let matchedText = $(postCont).find(".post-message").text();
+
+                    let replacedText = matchedText.replaceAll(
+                        regex,
+                        `<span style="font-weight:800;color:rgb(187, 185, 185);">${search_query}</span>`
+                    );
+                    let matches = matchedText.match(regex);
+
+                    let reconText = "";
+                    let ind = 0;
+                    let prev = 0;
+                    $.each(matches, function (index, match) {
+                        let newReg = new RegExp(`${match}`, "i");
+                        let searchText =
+                            replacedText.slice(ind).search(newReg) + ind;
+                        let wordRange =
+                            parseInt(searchText) + parseInt(match.length);
+                        let getWord = replacedText.slice(searchText, wordRange);
+                        ind = wordRange;
+                        reconText += replacedText
+                            .slice(prev, ind)
+                            .replace(getWord, match);
+                        prev = ind;
+                    });
+                    reconText += replacedText.slice(ind);
+                    replacedText = reconText;
+
+                    $(postCont).find(".post-message").html(replacedText);
+                });
+        }
     });
 });
 // showActiveView(".discussion-wrapper");
 // 192.168.13.64
+
+//

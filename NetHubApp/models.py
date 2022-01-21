@@ -12,6 +12,8 @@ class User(AbstractUser):
 	Date_of_Birth = models.DateField(null=True,blank=True)
 	about = models.TextField(null=True,blank=True)
 	
+	def fullName(self):
+		return self.first_name + " "+ self.last_name
 	def check_dob(self):
 		if self.Date_of_Birth is not None:
 			return self.Date_of_Birth.strftime("%d %B, %Y")

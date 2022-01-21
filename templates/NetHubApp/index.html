@@ -6,7 +6,7 @@
     NETHUB | {{ page }}
 {% endblock %}
 
-{% block header %} <h3 class='header-title'> {{ page|title }}</h3>{% endblock %}
+{% block header %}  <h3 class='header-title'> {{ page|title }}</h3>{% endblock %}
 
 {% block body %}
     <div class="post-overlay {% if follow is not None or is_profile or custom_posts is not None %}hide-main-home{% endif %}" id="main-home-post-container">
@@ -377,6 +377,195 @@
 
              </div>
 
+        </section> 
+
+
+
+        {% comment %} Search View Section {% endcomment %}
+
+        <section class="post-overlay search-view-container" id="main-search-view"> 
+            <div class="search-view-submain">
+                <div class="search-view-header">
+                    <svg class="search-back-navigator {% if queryResult is None %}hide-back-navigator{% endif %}" viewBox="0 0 24 24" aria-hidden="true" class="r-4qtqp9 r-yyyyoo r-z80fyv r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-19wmn03" style="color: whitesmoke;" ><g><path d="M20 11H7.414l4.293-4.293c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0l-6 6c-.39.39-.39 1.023 0 1.414l6 6c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L7.414 13H20c.553 0 1-.447 1-1s-.447-1-1-1z"></path></g></svg>
+                    <div class="search-view-input search-form">
+                        <form class="search-input-form" action="" >
+                            <button type="submit">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                    class="r-111h2gw r-4qtqp9 r-yyyyoo r-1xvli5t r-dnmrzs r-4wgw6l r-f727ji r-bnwqim r-1plcrui r-lrvibr"
+                                >
+                                    <g>
+                                        <path
+                                            d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"
+                                        ></path>
+                                    </g>
+                                </svg>
+                            </button>
+                            <input
+                                class="search-input"
+                                type="text"
+                                placeholder="Search NetHub"
+                            />
+                            <div class="cancel-search-inp">
+                                <svg
+                                    viewBox="0 0 15 15"
+                                    aria-hidden="true"
+                                    class="r-3xi3v6 r-4qtqp9 r-yyyyoo r-1or9b2r r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-5soawk"
+                                >
+                                    <g>
+                                        <path
+                                            d="M8.914 7.5l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L7.5 6.086 1.707.293c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L6.086 7.5.293 13.293c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L7.5 8.914l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L8.914 7.5z"
+                                        ></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </form>
+                        <div class="search-popup">
+                            <div class="search-placeholder">
+                                Try searching for people or keywords
+                            </div>
+                            <section class="suggestion-box-container">
+                                <div class="search-query-string-container">
+                                    Search Result for
+                                    <span class="search-query-string"></span>
+                                </div>
+                                <div
+                                    class="suggestion-users-box-container"
+                                ></div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+                <div class="search-view-body">
+                   
+                    <div class="search-view-topUsers  {% if queryResult is not None %}hide-topUsers-view{% endif %} ">
+                        <h1>Top Users</h1>
+                        <div class="topUsers_list_container">
+                            {% for top_user in users_lists %}
+                            <div class="top_user">
+                                <img
+                                    src="{{top_user.user.profile_picture.url}}"
+                                />
+
+                                <div class="top_user_info">
+                                    <div class="top_user_username">
+                                        <span
+                                            >{{top_user.user.username.capitalize}}</span
+                                        >
+                                    </div>
+                                    <div class="top_user_follow">
+                                        <span class="topUserFollowingSpan">
+                                            Following:&nbsp;{{top_user.user.user_following.all.first.following.all.count}}
+                                        </span>
+                                        <span class="topUserFollowersSpan">
+                                            Followers:&nbsp;{{top_user.user.followers.all.count}}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="top_user">
+                                <h1>No Top Users Yet</h1>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if queryResult is not None %}
+                        <div class="search-view-result-header">
+                            <div class="search-view-result-posts {% if queryType == 'posts' %} search-view-result-active {% endif %}">
+                                <span>POSTS</span>
+                            </div>
+                            <div class= "search-view-result-users {% if queryType == 'users' %} search-view-result-active {% endif %}">
+                                <span>USERS</span> 
+                            </div> 
+                        </div>
+                        <div class= "search-view-result">
+                            {% if queryType == "posts" %}
+                                {% for post in queryResult %}
+                                    <div class='post-container viewProfilerContainer' data-postId="{{post.id}}">
+                                        <div class='post-image'>
+                                            <img src="{{post.post_creator.profile_picture.url}} " alt="">
+                                        </div>
+                                        <div class='post-content'>
+                                            <div class='post-title'>
+                                                <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                                            </div>
+                                            <div data-postId="{{post.id}}" class='post-message'>
+                                                {{post.post_content | safe}}
+                                            </div>
+                                            <div class='edit-info'>
+                                                
+                                                <i class="far fa-window-close"></i>
+                                                <i class="fas fa-save"></i>
+                                            </div>
+                                            <div class='post-info'>
+                                                <!-- <i class="fi fi-sr-heart"></i> -->
+                                                <div>
+                                                    {% if request.user in post.liked_by.all %}
+                                                        <i data-postPk = {{post.id}} class="fi fi-sr-heart like-icon"></i>
+                                                    {% else %}
+                                                        <i data-postPk = {{post.id}} class="fi fi-rr-heart like-icon"></i>
+                                                    {% endif %}
+                                                    
+
+                                                    <span class='like-count'>
+                                                    {% if post.post_likes > 0 %}
+                                                        {{post.post_likes}}
+                                                    {% endif %}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <i data-postPk = {{post.id}} class="fi fi-rr-comment comment-icon"></i> 
+                                                    <span class='comment-count'>
+                                                        {% if post.post_comment.count > 0 %}
+                                                            {{post.post_comment.count}}
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                {% if user.id == post.post_creator.id %}<div><i data-postPk = {{post.id}} class="fi fi-rr-pencil"></i></div>{% endif %}
+                                                <div><i data-postPk = {{post.id}} class="bookmark-btn fi {% if post.id in user.get_bookmark %}fi-sr-bookmark{% else %}fi-rr-bookmark {% endif %}"></i> </div>
+                                                <!-- <i class="fi fi-sr-bookmark"></i> -->
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                {% empty %}
+                                    <h3 class='empty-post'>No Result match your search </h3>
+                                {% endfor %}
+                            {% elif queryType == "users" %}
+                                {% for user in queryResult %}
+                                     <div class="search-result-user">
+                                        <img src= "{{user.profile_picture.url}}">
+                                        <div class="search-result-user-info">
+                                            <div class="search-result-user-name">
+                                                <span class="search-result-user-fullname">
+                                                    {{user.fullName}}
+                                                </span>
+                                                <span class="search-result-user-username">
+                                                    {{user.username|title}}
+                                                </span>
+                                            </div>
+                                            <div class="search-result-user-addInfo">
+                                                <span class="search-result-user-following">
+                                                    Following:&nbsp;{{user.user_following.all.first.following.all.count}}
+                                                </span>
+                                                <span class="search-result-user-follower">
+                                                    Followers:&nbsp;{{user.followers.all.count}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <h3 class='empty-post'>No Result match your search </h3>
+                                    
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </section>
 
 {% endblock %}

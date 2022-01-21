@@ -2,222 +2,409 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static  'NetHubApp/uicons-regular-rounded/css/uicons-regular-rounded.css' %}">
-    <link rel="stylesheet" href="{% static  'NetHubApp/uicons-solid-rounded/css/uicons-solid-rounded.css' %}">
-    
-    <link rel="stylesheet" href="{% static  'NetHubApp/styles.css' %}">
-    <link rel="icon" href="{% static 'NetHubApp/logo.jpg' %}">
-    <script src="{% static  'NetHubApp/jquery.js' %}"></script>
-    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
-    
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="{% static  'NetHubApp/croppie.css' %}">
-    <script src="{% static  'NetHubApp/croppie.js' %}"></script>
-    <script src="{% static  'NetHubApp/exif.js' %}"></script>
-    <title> {% block title %} NETHUB {% endblock %}</title>
-    <script src="https://kit.fontawesome.com/d64329f4e5.js" crossorigin="anonymous"></script>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="stylesheet"
+            href="{% static  'NetHubApp/uicons-regular-rounded/css/uicons-regular-rounded.css' %}"
+        />
+        <link
+            rel="stylesheet"
+            href="{% static  'NetHubApp/uicons-solid-rounded/css/uicons-solid-rounded.css' %}"
+        />
 
-    <!-- 
+        <link rel="stylesheet" href="{% static  'NetHubApp/styles.css' %}" />
+        <link rel="icon" href="{% static 'NetHubApp/logo.jpg' %}" />
+        <script src="{% static  'NetHubApp/jquery.js' %}"></script>
+        <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css"
+        />
+        <link rel="stylesheet" href="{% static  'NetHubApp/croppie.css' %}" />
+        <script src="{% static  'NetHubApp/croppie.js' %}"></script>
+        <script src="{% static  'NetHubApp/exif.js' %}"></script>
+        <title>{% block title %} NETHUB {% endblock %}</title>
+        <script
+            src="https://kit.fontawesome.com/d64329f4e5.js"
+            crossorigin="anonymous"
+        ></script>
+    </head>
+    <body>
+        <!-- 
         <i class="fi fi-rr-user"></i>
         
     -->
-    <section class='main'>
-        <div class="blur-main">
+        <section class="main">
+            <div class="blur-main"></div>
+            <div class="submain">
+                <div class="submain-1">
+                    <div
+                        class="submain-1-container {% if not user.is_authenticated %} submain-1-container-not-auth{% endif %}"
+                    >
+                        <!--  -->
 
-        </div>
-        <div class='submain'>
-          
-            <div class='submain-1'>
+                        <div class="submain-1-flex submain-1-logo">
+                            <img
+                                src="{% static  'NetHubApp/logo.jpg' %}"
+                                alt=""
+                            />
+                            <h3><a href="{% url 'home' %}">Nethub</a></h3>
+                        </div>
 
-                
-                <div class='submain-1-container {% if not user.is_authenticated %} submain-1-container-not-auth{% endif %} '>
-                    <!--  -->
-
-                    <div class='submain-1-flex submain-1-logo'>
-                        <img src="{% static  'NetHubApp/logo.jpg' %}" alt="">
-                        <h3><a href="{% url 'home' %}">Nethub</a></h3>
-
-                    </div>
-
-                    {% if not user.is_authenticated %}
-                        <nav class="submain-1-flex submain-1-nav submain-1-nav-not-auth">
+                        {% if not user.is_authenticated %}
+                        <nav
+                            class="submain-1-flex submain-1-nav submain-1-nav-not-auth"
+                        >
                             {% block auth-option %}
-                                <a class='submain-1-auth-link' href="{% url 'login' %}"><i class="fi fi-rr-sign-in"></i> SIGN IN</a>
-                                <a class='submain-1-auth-link' href="{% url 'register' %}"><i class="fas fa-address-card"></i>CREATE AN ACCOUNT</a>
-
+                            <a
+                                class="submain-1-auth-link"
+                                href="{% url 'login' %}"
+                                ><i class="fi fi-rr-sign-in"></i> SIGN IN</a
+                            >
+                            <a
+                                class="submain-1-auth-link"
+                                href="{% url 'register' %}"
+                                ><i class="fas fa-address-card"></i>CREATE AN
+                                ACCOUNT</a
+                            >
 
                             {% endblock %}
                         </nav>
-                    {% else %} 
-
+                        {% else %}
 
                         <nav class="submain-1-flex submain-1-nav">
-                            <a class='submain-1-nav-link active-link submain-1-nav-link-mobile' data-link='home'  href='#'> <i class="fas fa-home"></i></i>Home</a>
-                            <a class='submain-1-nav-link' data-link='profile' href='#'> <i class="fas fa-user"></i>Profile</a>
-                            <a class='submain-1-nav-link' data-link='following' href="#"><i class="fas fa-user-check"></i>Following </a>
-                            <a class='submain-1-nav-link' data-link='followers' href="#"><i class="fas fa-user-friends"></i>Followers</a> 
-                            <a class='submain-1-nav-link submain-1-nav-link-mobile' data-link='following_posts' href="#"><i class="fas fa-users"></i>Following Posts</a>
-                            <a class='submain-1-nav-link submain-1-nav-link-mobile' data-link='bookmarks' href="#"><i class="fi fi-sr-bookmark"></i> Bookmarks</a>
-                            <a class='submain-1-nav-link main-logout-link' href="#"><i class="fi fi-rr-sign-out-alt"></i> Logout</a>
+                            <a
+                                class="submain-1-nav-link active-link submain-1-nav-link-mobile"
+                                data-link="home"
+                                href="#"
+                            >
+                                <i class="nav-home-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                        class="r-jwli3a r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr"
+                                    >
+                                        <g>
+                                            <path
+                                                d="M22.58 7.35L12.475 1.897c-.297-.16-.654-.16-.95 0L1.425 7.35c-.486.264-.667.87-.405 1.356.18.335.525.525.88.525.16 0 .324-.038.475-.12l.734-.396 1.59 11.25c.216 1.214 1.31 2.062 2.66 2.062h9.282c1.35 0 2.444-.848 2.662-2.088l1.588-11.225.737.398c.485.263 1.092.082 1.354-.404.263-.486.08-1.093-.404-1.355zM12 15.435c-1.795 0-3.25-1.455-3.25-3.25s1.455-3.25 3.25-3.25 3.25 1.455 3.25 3.25-1.455 3.25-3.25 3.25z"
+                                            ></path>
+                                        </g>
+                                    </svg> </i
+                                >Home
+                            </a>
+                            <a
+                                class="submain-1-nav-link"
+                                data-link="profile"
+                                href="#"
+                            >
+                                <i class="fas fa-user"></i>Profile
+                            </a>
+                            <a
+                                class="submain-1-nav-link"
+                                data-link="following"
+                                href="#"
+                            >
+                                <i class="fas fa-user-check"></i>Following
+                            </a>
+                            <a
+                                class="submain-1-nav-link"
+                                data-link="followers"
+                                href="#"
+                            >
+                                <i class="fas fa-user-friends"></i>Followers
+                            </a>
+                            <a
+                                class="submain-1-nav-link submain-1-nav-link-mobile"
+                                data-link="following_posts"
+                                href="#"
+                            >
+                                <i class="fas fa-users"></i>Following Posts
+                            </a>
+                            <a
+                                class="submain-1-nav-link submain-1-nav-link-mobile"
+                                data-link="bookmarks"
+                                href="#"
+                            >
+                                <i class="fi fi-sr-bookmark"></i> Bookmarks
+                            </a>
+                            <a
+                                class="submain-1-nav-link submain-1-nav-link-tab submain-1-nav-link-mobile"
+                                data-link="search"
+                                href="#"
+                            >
+                                <i class="nav-search-icon"
+                                    ><svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                        class="r-jwli3a r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr"
+                                    >
+                                        <g>
+                                            <path
+                                                d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"
+                                            ></path>
+                                        </g></svg
+                                ></i>
+                                Search
+                            </a>
+
+                            <a
+                                class="submain-1-nav-link main-logout-link"
+                                href="#"
+                                ><i class="fi fi-rr-sign-out-alt"></i> Logout</a
+                            >
                         </nav>
                         <div class="submain-1-flex submain-1-userinfo">
-                            <a href='#'>
-                                <img id='submain-1-userpic' src=" {{user.profile_picture.url}} " alt="">
+                            <a href="#">
+                                <img
+                                    id="submain-1-userpic"
+                                    src=" {{user.profile_picture.url}} "
+                                    alt=""
+                                />
                             </a>
-                            <a class="submain-1-username" href="#" data-username="{{user.username}}" data-userId="{{user.id}}"><h4>{{user.username|title}}</h4></a>
-                        
-                            
+                            <a
+                                class="submain-1-username"
+                                href="#"
+                                data-username="{{user.username}}"
+                                data-userId="{{user.id}}"
+                                ><h4>{{user.username|title}}</h4></a
+                            >
                         </div>
-                    
-                    {% endif %}
-                </div>
-            </div>
 
-            <div class='submain-2'>
-            
-                <header>
-                    <a href=" {% url 'index' 'home' %} "><img class ='logo-img' src="{% static  'NetHubApp/logo.jpg' %}" alt=""></a>
-                    {% if not user.is_authenticated %}<img class='hamburger-menu navigator-menu' src="{% static  'NetHubApp/hamburger.png' %}" alt=""> {% else %}<img class='image-nav-menu navigator-menu' src="{{user.profile_picture.url}}" alt="">{% endif %}
-                    {% block header %} <h3 class='header-title'> Home</h3> {% endblock %}
-                </header>
-                <div class='body-overlay'> 
-                
-                    {% block body %}
-
-                    {% endblock %}
-                
-                    
+                        {% endif %}
+                    </div>
                 </div>
-                {% if user.is_authenticated %}
-                    <a href="#" class='new-post-mobile-btn'>
+
+                <div class="submain-2">
+                    <header>
+                        <a href=" {% url 'index' 'home' %} "
+                            ><img
+                                class="logo-img"
+                                src="{% static  'NetHubApp/logo.jpg' %}"
+                                alt=""
+                        /></a>
+                        {% if not user.is_authenticated %}<img
+                            class="hamburger-menu navigator-menu"
+                            src="{% static  'NetHubApp/hamburger.png' %}"
+                            alt=""
+                        />
+                        {% else %}<img
+                            class="image-nav-menu navigator-menu"
+                            src="{{user.profile_picture.url}}"
+                            alt=""
+                        />{% endif %} {% block header %}
+                        <h3 class="header-title">Home</h3>
+                        {% endblock %}
+                    </header>
+                    <div class="body-overlay">
+                        {% block body %} {% endblock %}
+                    </div>
+                    {% if user.is_authenticated %}
+                    <a href="#" class="new-post-mobile-btn">
                         <i class="fi fi-rr-plus"></i>
                     </a>
-                {% endif %}
-            </div> 
-            <div class='submain-3 {% if not user.is_authenticated %} submain-3-not-auth {% endif %}'>
-                <!--  -->
-                {% if user.is_authenticated %}
-                    <div class="submain-3-search">
-                        <form class ='search-input-form' action="" method="">
-                            <button type ='submit'><i class="fi fi-rr-search"></i></button>
-                            <input class='search-input' type="text" placeholder="Search NetHub">
-                            <div class='cancel-search-inp'>
-                                <svg viewBox="0 0 15 15" aria-hidden="true" class="r-3xi3v6 r-4qtqp9 r-yyyyoo r-1or9b2r r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-5soawk"><g><path d="M8.914 7.5l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L7.5 6.086 1.707.293c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L6.086 7.5.293 13.293c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L7.5 8.914l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L8.914 7.5z"></path></g></svg>
+                    {% endif %}
+                </div>
+                <div
+                    class="submain-3 {% if not user.is_authenticated %} submain-3-not-auth {% endif %}"
+                >
+                    <!--  -->
+                    {% if user.is_authenticated %}
+                    <div class="submain-3-search search-form">
+                        <form class="search-input-form" action="" method="">
+                            <button type="submit">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                    class="r-111h2gw r-4qtqp9 r-yyyyoo r-1xvli5t r-dnmrzs r-4wgw6l r-f727ji r-bnwqim r-1plcrui r-lrvibr"
+                                >
+                                    <g>
+                                        <path
+                                            d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"
+                                        ></path>
+                                    </g>
+                                </svg>
+                            </button>
+                            <input
+                                class="search-input"
+                                type="text"
+                                placeholder="Search NetHub"
+                            />
+                            <div class="cancel-search-inp">
+                                <svg
+                                    viewBox="0 0 15 15"
+                                    aria-hidden="true"
+                                    class="r-3xi3v6 r-4qtqp9 r-yyyyoo r-1or9b2r r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-5soawk"
+                                >
+                                    <g>
+                                        <path
+                                            d="M8.914 7.5l5.793-5.793c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0L7.5 6.086 1.707.293c-.39-.39-1.023-.39-1.414 0s-.39 1.023 0 1.414L6.086 7.5.293 13.293c-.39.39-.39 1.023 0 1.414.195.195.45.293.707.293s.512-.098.707-.293L7.5 8.914l5.793 5.793c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L8.914 7.5z"
+                                        ></path>
+                                    </g>
+                                </svg>
                             </div>
                         </form>
                         <div class="search-popup">
-                            <div class= 'search-placeholder'>
+                            <div class="search-placeholder">
                                 Try searching for people or keywords
                             </div>
-                            <section class='suggestion-box-container'>
-                                <div class='search-query-string-container'>Search Result for 
-                                    <span class='search-query-string'></span>
+                            <section class="suggestion-box-container">
+                                <div class="search-query-string-container">
+                                    Search Result for
+                                    <span class="search-query-string"></span>
                                 </div>
-                                <div class= "suggestion-users-box-container">
-                                </div>
+                                <div
+                                    class="suggestion-users-box-container"
+                                ></div>
                             </section>
                         </div>
-                        
-
                     </div>
                     <div class="submain-3-topUsers">
                         <h1>Top Users</h1>
-                        <div class= 'topUsers_list_container'>
+                        <div class="topUsers_list_container">
                             {% for top_user in users_lists %}
-                                <div class='top_user'>
-                            
-                                    <img src= "{{top_user.user.profile_picture.url}}"/>
-                                    
-                                    <div class= 'top_user_info'>
-                                        <div class='top_user_username'><span>{{top_user.user.username.capitalize}}</span></div>
-                                        <div class='top_user_follow'>
-                                            <span class='topUserFollowingSpan'>
-                                                Following:&nbsp;{{top_user.user.user_following.all.first.following.all.count}}
-                                            </span> 
-                                            <span class='topUserFollowersSpan'>
-                                                Followers:&nbsp;{{top_user.user.followers.all.count}}
-                                            </span>
-                                        </div>
+                            <div class="top_user">
+                                <img
+                                    src="{{top_user.user.profile_picture.url}}"
+                                />
+
+                                <div class="top_user_info">
+                                    <div class="top_user_username">
+                                        <span
+                                            >{{top_user.user.username.capitalize}}</span
+                                        >
                                     </div>
-
+                                    <div class="top_user_follow">
+                                        <span class="topUserFollowingSpan">
+                                            Following:&nbsp;{{top_user.user.user_following.all.first.following.all.count}}
+                                        </span>
+                                        <span class="topUserFollowersSpan">
+                                            Followers:&nbsp;{{top_user.user.followers.all.count}}
+                                        </span>
+                                    </div>
                                 </div>
+                            </div>
                             {% empty %}
-                                <div class='top_user'>
-                            
-                                    <h1>No Top Users Yet</h1>
-                                </div>
+                            <div class="top_user">
+                                <h1>No Top Users Yet</h1>
+                            </div>
                             {% endfor %}
-
                         </div>
-                    </div> 
-                {% else %}
+                    </div>
+                    {% else %}
                     <h1>LET'S GET YOU STARTED</h1>
 
-                {% endif %}                 
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        <input id='csrf' type='text' value='{{csrf_token }}' hidden>
+            <input id="csrf" type="text" value="{{csrf_token }}" hidden />
 
+            <section class="new-post-mobile-container">
+                <div>
+                    <i class="mobile-back-post-btn">
+                        <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                            class="r-4qtqp9 r-yyyyoo r-z80fyv r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-19wmn03"
+                            style="color: rgb(239, 243, 244)"
+                        >
+                            <g>
+                                <path
+                                    d="M20 11H7.414l4.293-4.293c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0l-6 6c-.39.39-.39 1.023 0 1.414l6 6c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L7.414 13H20c.553 0 1-.447 1-1s-.447-1-1-1z"
+                                ></path>
+                            </g>
+                        </svg>
+                    </i>
+                    <h1>New Post</h1>
+                </div>
+                <form action="{% url 'create_post' %}" method="post">
+                    {% csrf_token %}
+                    <div
+                        placeholder="What's going on buddy?"
+                        class="textarea"
+                        contenteditable="true"
+                    ></div>
+                    <input
+                        type="text"
+                        class="hidden-post"
+                        name="post_content"
+                        hidden
+                    />
+                    <input
+                        type="submit"
+                        class="new-post-btn btn-inactive"
+                        value="Post"
+                        disabled
+                    />
+                </form>
+            </section>
+            <div class="profile-edit-container hide-edit-info"></div>
+            <section class="popup-dark"></section>
+            <section class="comment-box-popup"></section>
+        </section>
 
-
-        <section class='new-post-mobile-container'>
-            <div> 
-                <i class="mobile-back-post-btn">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" class="r-4qtqp9 r-yyyyoo r-z80fyv r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-19wmn03" style="color: rgb(239, 243, 244);"><g><path d="M20 11H7.414l4.293-4.293c.39-.39.39-1.023 0-1.414s-1.023-.39-1.414 0l-6 6c-.39.39-.39 1.023 0 1.414l6 6c.195.195.45.293.707.293s.512-.098.707-.293c.39-.39.39-1.023 0-1.414L7.414 13H20c.553 0 1-.447 1-1s-.447-1-1-1z"></path></g></svg>
-                </i> 
-                <h1>New Post</h1>   
-
-            </div>
-            <form action="{% url 'create_post' %}" method='post'>
-
-                {% csrf_token %}
-                <div placeholder="What's going on buddy?"  class="textarea" contenteditable='true'></div>
-                <input type ='text' class='hidden-post' name='post_content' hidden>
-                <input type="submit" class='new-post-btn btn-inactive' value="Post" disabled>
-            
-            </form>
-        </section> 
-        <div class="profile-edit-container hide-edit-info">
-
-        </div>
-         <section class='popup-dark'> </section>
-         <section class='comment-box-popup'></section>
-         
-    </section>
-
-    {% if user.is_authenticated %}
+        {% if user.is_authenticated %}
         <footer>
-            <a class='footer-active' data-footerLink='home' data-footerName= 'Home'  href=""><i class="fas fa-home"></i></a>
-            <a href="" data-footerLink ='following_posts' data-footerName='Following Posts'><i class="fas fa-users"></i></a>
-            <a href="" data-footerLink ='bookmarks' data-footerName='Bookmarks'><i class="fi fi-sr-bookmark"></i></a>
-            <a href="" data-footerLink ='search' data-footerName='Search'><i class="fas fa-search"></i></a>
+            <a
+                class="footer-active"
+                data-footerLink="home"
+                data-footerName="Home"
+                href=""
+                ><i class="mobile-home-icon">
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="r-jwli3a r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr"
+                    >
+                        <g>
+                            <path
+                                d="M22.58 7.35L12.475 1.897c-.297-.16-.654-.16-.95 0L1.425 7.35c-.486.264-.667.87-.405 1.356.18.335.525.525.88.525.16 0 .324-.038.475-.12l.734-.396 1.59 11.25c.216 1.214 1.31 2.062 2.66 2.062h9.282c1.35 0 2.444-.848 2.662-2.088l1.588-11.225.737.398c.485.263 1.092.082 1.354-.404.263-.486.08-1.093-.404-1.355zM12 15.435c-1.795 0-3.25-1.455-3.25-3.25s1.455-3.25 3.25-3.25 3.25 1.455 3.25 3.25-1.455 3.25-3.25 3.25z"
+                            ></path>
+                        </g>
+                    </svg>
+                </i>
+            </a>
+            <a
+                href=""
+                data-footerLink="following_posts"
+                data-footerName="Following Posts"
+                ><i class="fas fa-users"></i
+            ></a>
+            <a href="" data-footerLink="bookmarks" data-footerName="Bookmarks"
+                ><i class="fi fi-sr-bookmark"></i
+            ></a>
+            <a href="" data-footerLink="search" data-footerName="Search"
+                ><i class="mobile-search-icon">
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="r-jwli3a r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr"
+                    >
+                        <g>
+                            <path
+                                d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"
+                            ></path>
+                        </g>
+                    </svg> </i
+            ></a>
         </footer>
-    {% endif %} 
-    <section class='logout-popup'> 
-        <h4> Are you Sure You Want Log Out??</h4>
-        <form action="{% url 'logout' %}" method='post'>
+        {% endif %}
+        <section class="logout-popup">
+            <h4>Are you Sure You Want Log Out??</h4>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
 
-            {% csrf_token %}
-           
-            <span> No, take me back</span>
+                <span> No, take me back</span>
 
-            <button type='submit'>Yes, Log me out</button>
-        </form>
-    </section>
-    
-   
+                <button type="submit">Yes, Log me out</button>
+            </form>
+        </section>
 
+        <script src="{% static  'NetHubApp/index.js' %}"></script>
 
-
-    
-    <script src="{% static  'NetHubApp/index.js' %}"></script>
-
-    {% block script %} {% endblock %}
-</body>
+        {% block script %} {% endblock %}
+    </body>
 </html>

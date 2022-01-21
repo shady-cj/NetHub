@@ -12,7 +12,7 @@ import base64
 from PIL import Image
 import json
 import os
-from .models import User,Post,Comment,Follower,Bookmark
+from .models import User,Post,Comment,Follower,Bookmark,Search
 
 # Create your views here.
 
@@ -25,7 +25,7 @@ def index(request,page='home'):
     posts = Post.objects.all()
     page_name =page.replace('_',' ').upper()
     if request.user.is_authenticated:
-        allowed_pages = ['home','bookmarks','following_posts','discussion']
+        allowed_pages = ['home','bookmarks','following_posts','discussion','search']
 
         if page not in allowed_pages:
             raise Http404
@@ -38,6 +38,8 @@ def index(request,page='home'):
                 request.user.save()
             custom_posts= None
             discussion = None
+            queryResult = None
+            queryType = None
             
             if page == 'following_posts':
             
@@ -59,6 +61,27 @@ def index(request,page='home'):
                     'post':request.session['postId'] 
                 }
             
+            elif page == 'search':
+                query = request.GET.get('query')
+                queryType = request.GET.get('type')
+
+                if queryType is not None and query is not None:
+                    checkQuery = Search.objects.filter(query__iexact = query)
+                    if not checkQuery.exists():
+
+                        Search.objects.create(query= query, search_user = request.user)
+
+                    if queryType == 'users':
+                        queryResult = User.objects.filter(Q(username__icontains = query)|Q(first_name__icontains= query)|Q(last_name__icontains= query))
+                    elif queryType == 'posts':
+                        queryResult = Post.objects.filter(post_content__icontains = query)
+                    else:
+
+                        raise Http404
+                
+                print(queryResult)
+
+            
             users_list = []
             for u in User.objects.all():
                 user_dict = {'user':u,'post_count':u.posts.all().count() }
@@ -72,7 +95,9 @@ def index(request,page='home'):
                 "page":page_name,
                 "follow":None,
                 "discussion":discussion,
-                "users_lists":top_users_list
+                "users_lists":top_users_list,
+                "queryResult":queryResult,
+                "queryType":queryType
 
             })
             
@@ -246,13 +271,18 @@ def querySearch(request):
     if is_ajax and request.method == 'GET':
         data = request.GET
         query = data.get('query')
-        users = User.objects.filter(Q(username__icontains = query)|Q(first_name__icontains= query)|Q(last_name__icontains= query))
-        posts = Post.objects.filter(post_content__icontains = query)
+        queryType = data.get('type')
+        if queryType == 'posts':
+            queryResult = Post.objects.filter(post_content__icontains = query)
 
+        elif queryType == 'users':
+            queryResult = User.objects.filter(Q(username__icontains = query)|Q(first_name__icontains= query)|Q(last_name__icontains= query))
+        else:
+            queryResult = []
 
-
-        users = [user.serialize() for user in users] 
-        return JsonResponse({'users':users,'num_match':len(users) })
+    
+        serializedResult = [result.serialize() for result in queryResult] 
+        return JsonResponse({'result':serializedResult,'num_match':len(serializedResult),'authUser':request.user.serialize() })
         
         
 

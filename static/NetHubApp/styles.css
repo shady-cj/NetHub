@@ -853,7 +853,7 @@ textarea {
         height: auto;
         min-height: 120px;
         padding-top: 9px;
-        margin-top: 8px;
+        margin-top: 20px;
     }
 }
 .post-container:first-of-type {
@@ -1222,6 +1222,18 @@ textarea {
 .submain-1-flex.submain-1-nav a i {
     margin-right: 12px;
 }
+.submain-1-flex.submain-1-nav a i.nav-home-icon svg {
+    width: 22px;
+    fill: whitesmoke;
+    margin-left: -2.3px;
+}
+.submain-1-flex.submain-1-nav a i.nav-search-icon svg {
+    width: 18px;
+    margin-left: -2px;
+    margin-bottom: -2px;
+    fill: whitesmoke;
+}
+
 .submain-1-flex.submain-1-nav {
     display: flex;
     flex-flow: column nowrap;
@@ -1232,11 +1244,18 @@ textarea {
     color: rgb(241, 236, 64) !important;
     transform: scale(1) !important;
 }
+.submain-1-flex.submain-1-nav a:hover svg {
+    fill: rgb(241, 236, 64, 0.4) !important;
+}
+.submain-1-flex.submain-1-nav a.active-link svg {
+    fill: rgb(241, 236, 64) !important;
+}
 
 .submain-1-flex.submain-1-nav a:hover {
     color: rgb(241, 236, 64, 0.4);
     transform: scale(1.03);
 }
+
 .submain-1-flex.submain-1-userinfo {
     order: -1;
     display: flex;
@@ -1293,6 +1312,9 @@ footer a.footer-active {
     background-color: whitesmoke;
     color: rgba(0, 0, 0, 0.8);
 }
+footer a.footer-active svg {
+    fill: rgba(0, 0, 0, 0.8);
+}
 
 footer a:first-child {
     border-top-left-radius: 15px;
@@ -1301,6 +1323,14 @@ footer a:first-child {
 footer a:last-child {
     border-top-right-radius: 15px;
     border-right: none;
+}
+.mobile-search-icon svg {
+    width: 25px;
+    fill: white;
+}
+.mobile-home-icon svg {
+    width: 25px;
+    fill: white;
 }
 
 .empty-post {
@@ -1417,6 +1447,340 @@ form .form-group .form-container div span {
 .btn-signUp-container .sign-up-btn:active {
     transform: scale(0.8);
 }
+
+/********************************** Search Section Styling  **************************************/
+.search-view-container {
+    padding-top: 10px !important;
+    display: none;
+}
+.search-view-submain {
+    display: flex;
+    flex-direction: column;
+}
+.search-view-header {
+    display: flex;
+    align-items: center;
+}
+.search-view-header > svg {
+    width: 40px;
+    margin-right: 14px;
+    padding: 6px;
+    fill: whitesmoke;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.4s ease-in;
+}
+.search-view-header > svg:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.search-view-input {
+    flex: 1;
+    position: relative;
+}
+.search-view-input form {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    background-color: rgb(68, 67, 67);
+    border-radius: 35px;
+}
+.search-view-input form button {
+    background-color: transparent;
+    border: none;
+    padding-left: 12px;
+    flex-basis: 15%;
+    margin-top: 4px;
+}
+.search-view-input form button svg {
+    width: 20px;
+    fill: whitesmoke;
+}
+.search-view-input form input {
+    flex: 1;
+    height: 70%;
+    border: none;
+    background-color: transparent;
+    color: whitesmoke;
+    font-size: 17px;
+    padding: 10px 6px;
+    padding-left: 3px;
+}
+.search-view-input form .cancel-search-inp {
+    background-color: #f1ec40;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 16px;
+    display: none;
+}
+.search-view-input form svg {
+    width: 12px;
+}
+
+.search-view-input form input:focus {
+    outline: none;
+}
+
+/********** Top Users Section *********/
+.search-view-body {
+    margin-top: 20px;
+    flex: 1;
+    padding: 3px 12px;
+}
+.search-view-topUsers h1 {
+    color: whitesmoke;
+}
+
+.submain-3-topUsers {
+    flex: 1;
+    border-radius: 9px;
+    box-shadow: 0px 0px 5px 1.5px rgba(255, 255, 255, 0.08);
+    padding: 3px 16px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.topUsers_list_container {
+    height: 100%;
+    flex: 1;
+    padding-top: 10px;
+}
+.topUsers_list_container .top_user {
+    display: flex;
+    align-items: center;
+    padding: 15px 1px;
+    border-bottom: 1px solid rgb(175, 174, 174);
+    transition: background-color 0.4s ease-in;
+}
+.topUsers_list_container .top_user:hover,
+.suggestion-user:hover {
+    background-color: rgba(218, 218, 218, 0.07);
+}
+
+.topUsers_list_container .top_user img {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.topUsers_list_container .top_user .top_user_info {
+    padding-left: 12px;
+    color: whitesmoke;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.top_user_info .top_user_follow {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding-top: 5px;
+}
+.top_user_info .top_user_follow span {
+    font-size: 14px;
+    color: rgb(210, 210, 210);
+    cursor: pointer;
+}
+.top_user_info .top_user_follow span:hover {
+    text-decoration: underline;
+}
+
+.top_user_info .top_user_follow span:last-child {
+    margin-left: 8px;
+}
+.top_user_info .top_user_username {
+    flex: 1;
+}
+.top_user_info .top_user_username span {
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.top_user_info .top_user_username span:hover {
+    text-decoration: underline;
+}
+.hide-topUsers-view {
+    display: none !important;
+}
+/********** Top user styling ends *********/
+
+/******* Search Pop up styling *******/
+.search-popup {
+    position: absolute;
+    width: 100%;
+    min-height: 100px;
+    max-height: 450px;
+    overflow-x: none;
+    overflow-y: auto;
+    z-index: 18;
+    background: rgb(26, 26, 26);
+    border-radius: 10px;
+    box-shadow: 0px 0px 5px 2px rgba(255, 255, 255, 0.1);
+    color: whitesmoke;
+    display: none;
+}
+.search-placeholder {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 14px;
+    color: rgb(202, 202, 202);
+}
+.suggestion-box-container {
+    display: none;
+    width: 100%;
+    margin-top: 4px;
+}
+.search-query-string-container,
+.suggestion-users-box-container {
+    padding: 12px 14px;
+}
+.search-query-string-container {
+    font-size: 15px;
+}
+.suggestion-users-box-container {
+    padding-top: 9px;
+    padding-left: 0;
+    padding-right: 0;
+}
+.suggestion-users-box-container .suggestion-user {
+    display: flex;
+    cursor: pointer;
+    transition: background-color 0.4s ease-in-out;
+}
+.search-for-message,
+.suggestion-user {
+    padding: 16px 14px;
+}
+.suggestion-user img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+}
+
+.suggestion-user .suggestion-user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0px 10px;
+}
+.suggestion-user-info .suggestion-user-name {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+}
+.suggestion-user-name .suggestion-user-fullname {
+    font-weight: 600;
+    line-height: 22px;
+}
+.suggestion-user-name .suggestion-user-username {
+    color: rgb(202, 202, 202);
+    font-size: 15px;
+    line-height: 22px;
+}
+.suggestion-user-info .suggestion-user-addInfo {
+    color: rgb(202, 202, 202);
+    font-size: 14px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    line-height: 22px;
+}
+.suggestion-user-addInfo svg {
+    width: 18px;
+    padding-right: 5px;
+    padding-top: 1px;
+    fill: rgb(202, 202, 202);
+}
+/******* Search popup ends ******/
+
+.search-view-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgb(189, 187, 187);
+}
+.search-view-result-header div {
+    flex: 1;
+    text-align: center;
+}
+.search-view-result-header div span {
+    color: whitesmoke;
+    cursor: pointer;
+}
+.search-view-result-active span {
+    color: #f1ec40 !important;
+}
+.search-result-user {
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+    transition: background-color 0.4s ease-in;
+    border-bottom: 1px solid gray;
+    padding-bottom: 12px;
+    cursor: pointer;
+}
+.search-result-user:hover {
+    background-color: rgba(218, 218, 218, 0.07);
+}
+.search-result-user > img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+}
+.search-result-user .search-result-user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: whitesmoke;
+    padding: 0px 20px;
+}
+.search-result-user-info .search-result-user-name {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.search-result-user-info .search-result-user-name span {
+    flex: 1;
+}
+.search-result-user-name .search-result-user-fullname {
+    font-size: 19px;
+    font-weight: 600;
+}
+.search-result-user-name .search-result-user-username {
+    font-size: 15px;
+    padding: 6px 0;
+    padding-bottom: 0px;
+}
+.search-result-user-info .search-result-user-addInfo {
+    display: flex;
+    padding: 9px 0;
+}
+.search-result-user-addInfo span {
+    font-size: 14px;
+    color: rgb(210, 210, 210);
+}
+.search-result-user-addInfo .search-result-user-follower {
+    margin-left: 12px;
+}
+.hide-back-navigator {
+    display: none !important;
+}
+
+/*****************************  Search styling ends************************************/
+
 /********************************** Discussion Styling Section Starts  ******************************/
 .discussion-wrapper {
     display: none;
@@ -1799,6 +2163,12 @@ form .form-group .form-container div span {
     .submain-1-flex.submain-1-nav .submain-1-nav-link {
         font-size: 12px;
     }
+    .submain-1-flex.submain-1-nav a i.nav-home-icon svg {
+        width: 16px;
+    }
+    .submain-1-flex.submain-1-nav a i.nav-search-icon svg {
+        width: 16px;
+    }
 
     .submain-1-flex.submain-1-logo img {
         width: 45px;
@@ -1878,6 +2248,19 @@ form .form-group .form-container div span {
     }
     .submain-1-flex.submain-1-nav .submain-1-nav-link {
         font-size: 16px;
+    }
+    .submain-1-flex.submain-1-nav a i.nav-home-icon svg {
+        width: 22px;
+        fill: whitesmoke;
+        margin-left: -2.3px;
+    }
+    .submain-1-flex.submain-1-nav a i.nav-search-icon svg {
+        width: 18px;
+        margin-left: -2px;
+        fill: whitesmoke;
+    }
+    .submain-1-nav-link-tab {
+        display: flex;
     }
     .logout-popup {
         height: 270px;
@@ -1969,96 +2352,7 @@ form .form-group .form-container div span {
         flex-basis: 8%;
         position: relative;
     }
-    .search-popup {
-        position: absolute;
-        width: 100%;
-        min-height: 100px;
-        max-height: 450px;
-        overflow-x: none;
-        overflow-y: auto;
-        z-index: 18;
-        background: rgb(26, 26, 26);
-        border-radius: 10px;
-        box-shadow: 0px 0px 5px 2px rgba(255, 255, 255, 0.1);
-        color: whitesmoke;
-        display: none;
-    }
-    .search-placeholder {
-        margin-top: 10px;
-        width: 100%;
-        padding: 10px 12px;
-        text-align: center;
-        font-size: 14px;
-        color: rgb(202, 202, 202);
-    }
-    .suggestion-box-container {
-        display: none;
-        width: 100%;
-        margin-top: 4px;
-    }
-    .search-query-string-container,
-    .suggestion-users-box-container {
-        padding: 12px 14px;
-    }
-    .search-query-string-container {
-        font-size: 15px;
-    }
-    .suggestion-users-box-container {
-        padding-top: 9px;
-        padding-left: 0;
-        padding-right: 0;
-    }
-    .suggestion-users-box-container .suggestion-user {
-        display: flex;
-        cursor: pointer;
-        transition: background-color 0.4s ease-in-out;
-    }
-    .search-for-message,
-    .suggestion-user {
-        padding: 16px 14px;
-    }
-    .suggestion-user img {
-        width: 55px;
-        height: 55px;
-        border-radius: 50%;
-    }
-    .suggestion-user .suggestion-user-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 0px 10px;
-    }
-    .suggestion-user-info .suggestion-user-name {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 1;
-        width: 100%;
-    }
-    .suggestion-user-name .suggestion-user-fullname {
-        font-weight: 600;
-        line-height: 22px;
-    }
-    .suggestion-user-name .suggestion-user-username {
-        color: rgb(202, 202, 202);
-        font-size: 15px;
-        line-height: 22px;
-    }
-    .suggestion-user-info .suggestion-user-addInfo {
-        color: rgb(202, 202, 202);
-        font-size: 14px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        line-height: 22px;
-    }
-    .suggestion-user-addInfo svg {
-        width: 18px;
-        padding-right: 5px;
-        padding-top: 1px;
-        fill: rgb(202, 202, 202);
-    }
+
     .submain-3 .submain-3-search form {
         height: 100%;
         display: flex;
@@ -2069,14 +2363,15 @@ form .form-group .form-container div span {
     }
     .submain-3 .submain-3-search form button {
         background-color: transparent;
-        color: whitesmoke;
         border: none;
         padding-left: 22px;
         flex-basis: 20%;
-        font-size: 20px;
-        margin-top: 7px;
+        margin-top: 4px;
     }
-
+    .submain-3 .submain-3-search form button svg {
+        width: 20px;
+        fill: whitesmoke;
+    }
     .submain-3 .submain-3-search form input {
         flex: 1;
         height: 70%;
@@ -2085,6 +2380,7 @@ form .form-group .form-container div span {
         color: whitesmoke;
         font-size: 17px;
         padding: 10px 6px;
+        padding-left: 3px;
     }
     .submain-3 .submain-3-search form .cancel-search-inp {
         background-color: #f1ec40;
@@ -2104,76 +2400,7 @@ form .form-group .form-container div span {
     .submain-3 .submain-3-search form input:focus {
         outline: none;
     }
-    .submain-3-topUsers {
-        flex: 1;
-        border-radius: 9px;
-        box-shadow: 0px 0px 5px 1.5px rgba(255, 255, 255, 0.08);
-        padding: 3px 16px;
-        margin-top: 20px;
-        display: flex;
-        flex-direction: column;
-    }
-    .topUsers_list_container {
-        height: 100%;
-        flex: 1;
-        padding-top: 10px;
-    }
-    .topUsers_list_container .top_user {
-        display: flex;
-        align-items: center;
-        padding: 15px 1px;
-        border-bottom: 1px solid rgb(175, 174, 174);
-        transition: background-color 0.4s ease-in;
-    }
-    .topUsers_list_container .top_user:hover,
-    .suggestion-user:hover {
-        background-color: rgba(218, 218, 218, 0.07);
-    }
 
-    .topUsers_list_container .top_user img {
-        height: 50px;
-        width: 50px;
-        border-radius: 50%;
-        cursor: pointer;
-    }
-
-    .topUsers_list_container .top_user .top_user_info {
-        padding-left: 12px;
-        color: whitesmoke;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    .top_user_info .top_user_follow {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        padding-top: 5px;
-    }
-    .top_user_info .top_user_follow span {
-        font-size: 14px;
-        color: rgb(210, 210, 210);
-        cursor: pointer;
-    }
-    .top_user_info .top_user_follow span:hover {
-        text-decoration: underline;
-    }
-
-    .top_user_info .top_user_follow span:last-child {
-        margin-left: 8px;
-    }
-    .top_user_info .top_user_username {
-        flex: 1;
-    }
-    .top_user_info .top_user_username span {
-        font-size: 18px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    .top_user_info .top_user_username span:hover {
-        text-decoration: underline;
-    }
     .submain-3 h1 {
         color: whitesmoke;
     }
@@ -2194,6 +2421,9 @@ form .form-group .form-container div span {
     }
     .submain-1-flex.submain-1-nav .submain-1-nav-link {
         font-size: 18px;
+    }
+    .submain-1-nav-link-tab {
+        display: none !important;
     }
     .post-title span.post-timestamp {
         font-size: 14px;
