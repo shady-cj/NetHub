@@ -272,19 +272,31 @@ def querySearch(request):
         data = request.GET
         query = data.get('query')
         queryType = data.get('type')
-        if queryType == 'posts':
-            queryResult = Post.objects.filter(post_content__icontains = query)
+        submitted = data.get('submitted')
 
-        elif queryType == 'users':
-            queryResult = User.objects.filter(Q(username__icontains = query)|Q(first_name__icontains= query)|Q(last_name__icontains= query))
+        if query is not None and queryType is not None:
+            if submitted:
+                checkQuery = Search.objects.filter(query__iexact = query)
+                if not checkQuery.exists():
+
+                    Search.objects.create(query= query, search_user = request.user)
+
+
+            if queryType == 'posts':
+                queryResult = Post.objects.filter(post_content__icontains = query)
+
+            elif queryType == 'users':
+                queryResult = User.objects.filter(Q(username__icontains = query)|Q(first_name__icontains= query)|Q(last_name__icontains= query))
+            else:
+                queryResult = []
+
+        
+            serializedResult = [result.serialize() for result in queryResult] 
+            return JsonResponse({'result':serializedResult,'num_match':len(serializedResult),'authUser':request.user.serialize() })
         else:
-            queryResult = []
+            return JsonResponse({'error':'Request must have query and query type parameter' })
 
-    
-        serializedResult = [result.serialize() for result in queryResult] 
-        return JsonResponse({'result':serializedResult,'num_match':len(serializedResult),'authUser':request.user.serialize() })
-        
-        
+            
 
 @login_required
 def getUserInfo(request):

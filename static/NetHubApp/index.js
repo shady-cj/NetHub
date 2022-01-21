@@ -22,7 +22,13 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 }
             }
         }
-
+        // function to strip off divs and unnecessary space from contenteditable div input
+        function formatContentEditableDivString(text) {
+            return text
+                .replace(/&nbsp;/g, "")
+                .replace(/<div>/g, "")
+                .replace(/<\/div>/g, "");
+        }
         addToBookmark(bookmarkBtn);
         $(mobileNewPostBtn).click(function (e) {
             e.preventDefault();
@@ -78,9 +84,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 e.preventDefault();
                 let url = $(form).attr("action");
                 payload = JSON.stringify({
-                    post_content: $(inputContent).val().trim(),
+                    post_content: formatContentEditableDivString(
+                        $(inputContent).val()
+                    ),
                     post_image: null,
                 });
+
                 mobileNewPostCon.css("left", "150%");
 
                 let token = $("#csrf").val();
@@ -188,7 +197,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
                 $(btn).click(function (e) {
                     e.stopPropagation();
-                    var iContent = $(postMessage).html();
+                    var iContent = formatContentEditableDivString(
+                        $(postMessage).html()
+                    );
                     $(postMessage).attr("contenteditable", "true");
 
                     $(postMessage).focus();
@@ -231,7 +242,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
                                             data: JSON.stringify({
                                                 post_content:
-                                                    $(postMessage).html(),
+                                                    formatContentEditableDivString(
+                                                        $(postMessage).html()
+                                                    ),
                                             }),
 
                                             // contentType: 'application/json',
@@ -241,7 +254,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                                     "XMLHttpRequest",
                                             },
                                         }).done(function (result) {
-                                            console.log(result.edited);
                                             $(".fi-rr-pencil").each(
                                                 (index, icon) => {
                                                     if (
@@ -256,9 +268,11 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                                                 ".post-message"
                                                             )
                                                             .html(
-                                                                $(
-                                                                    postMessage
-                                                                ).html()
+                                                                formatContentEditableDivString(
+                                                                    $(
+                                                                        postMessage
+                                                                    ).html()
+                                                                )
                                                             );
                                                     }
                                                 }
@@ -1111,14 +1125,26 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 $(".edit-profile-header .icon-times").click(function () {
                     if (profileEdited) {
                         $(".update-confirm-modal").css("display", "flex");
+                        $(".edit-profile-submain").css("overflow-y", "hidden");
                         $("#edit-discard").on("click", function () {
                             $(".hide-edit-info").hide();
                             $(".popup-dark").hide();
+
                             $(".update-confirm-modal").hide();
+                            $(".edit-profile-submain").css(
+                                "overflow-y",
+                                "scroll"
+                            );
+
                             profileEdited = false;
+                            imageByte = null;
                         });
                         $("#edit-cancel").on("click", function () {
                             $(".update-confirm-modal").hide();
+                            $(".edit-profile-submain").css(
+                                "overflow-y",
+                                "scroll"
+                            );
                         });
                     } else {
                         $(".hide-edit-info").hide();
@@ -1147,6 +1173,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                 pic: imageByte,
                                 imageFile: $("#edit-pics").val(),
                             };
+                            console.log(imageByte);
                             var token = $("#csrf").val();
                             $.ajax({
                                 url: `/updateUser/${targetUser}`,
@@ -1333,6 +1360,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     $(cropMainCon).css("display", "flex");
+                    $(editSection).scrollTop(0);
                     $(editSection).css("overflow-y", "hidden");
 
                     cropper.croppie("bind", {
@@ -1857,8 +1885,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             let message = {
                 postId: postId,
                 message: fromDiscussion
-                    ? $("#reply-editable-input").val()
-                    : $("#commentInputForDiv").val(),
+                    ? formatContentEditableDivString(
+                          $("#reply-editable-input").val()
+                      )
+                    : formatContentEditableDivString(
+                          $("#commentInputForDiv").val()
+                      ),
             };
             let jsonMessage = JSON.stringify(message);
             $.ajax({
