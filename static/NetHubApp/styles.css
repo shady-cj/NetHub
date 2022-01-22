@@ -1632,6 +1632,39 @@ form .form-group .form-container div span {
     font-size: 14px;
     color: rgb(202, 202, 202);
 }
+.search-placeholder .recent-search-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.recent-search-header {
+    color: whitesmoke;
+}
+.recent-search-header span:first-child {
+    font-size: 17px;
+    margin-left: 3px;
+}
+.recent-search-header span:last-child {
+    cursor: pointer;
+
+    font-size: 15px;
+    padding-right: 10px;
+}
+.search-placeholder .recent-search-body {
+    display: flex;
+    flex-flow: row wrap;
+}
+.recent-search-body .recent-query {
+    padding: 4px 16px;
+    flex: 1;
+    background-color: #474646;
+    border-radius: 4px;
+    margin: 2px 5px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    color: whitesmoke;
+}
 .suggestion-box-container {
     display: none;
     width: 100%;

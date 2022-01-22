@@ -1356,7 +1356,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             });
 
             console.log(inputFileField);
-            $(inputFileField).change(function () {
+            $(inputFileField).on("change", function () {
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     $(cropMainCon).css("display", "flex");
@@ -1370,7 +1370,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
                 reader.readAsDataURL(this.files[0]);
             });
-            $(imageUpdate).click(function () {
+            $(imageUpdate).on("click", function () {
                 cropper
                     .croppie("result", {
                         type: "canvas",
@@ -1391,12 +1391,12 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 $(cropMainCon).hide();
                 $(editSection).css("overflow-y", "scroll");
             });
-            $(updateDob).focusin(function () {
+            $(updateDob).on("focusin", function () {
                 var icon = $(this).siblings("label").children("i");
                 $(icon).removeClass("fa-chevron-down");
                 $(icon).addClass("fa-chevron-up");
             });
-            $(updateDob).focusout(function () {
+            $(updateDob).on("focusout", function () {
                 var icon = $(this).siblings("label").children("i");
                 $(icon).removeClass("fa-chevron-up");
                 $(icon).addClass("fa-chevron-down");
@@ -2329,6 +2329,31 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         let currentSearchQuery = null;
 
+        // route to search page
+        function routeToSearchPage(q) {
+            showActiveView(searchView);
+            $("header").hide();
+            addActive(
+                footerLinks,
+                $(footerLinks).filter(`[data-footerLink='search']`),
+                "footer-active"
+            );
+
+            addActive(
+                mainNavLinks,
+                $(mainNavLinks).filter(`[data-link='search']`),
+                "active-link"
+            );
+
+            $(headerTitle).text("Search");
+            $("title").text(`NETHUB | SEARCH`);
+
+            pushHistoryState("search", null, null, {
+                query: q.trim(),
+                type: "posts",
+            });
+        }
+
         // Enable search functionality with search the search input
 
         $(searchForm).each(function (index, form) {
@@ -2354,59 +2379,52 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 ".search-query-string"
             );
 
+            let elementAccessories = {
+                searchPlaceholder,
+                searchIcon,
+                cancelSearch,
+                searchPopup,
+                searchViewTopUsers,
+                searchViewBody,
+                form,
+            };
+
             // Handle when the form is submitted
 
             $(form).on("submit", function (e) {
-                let q = $(searchField).val();
+                let q = $(searchField).val().trim();
                 e.preventDefault();
-                console.log("submitted");
-                showActiveView(searchView);
-                $("header").hide();
-                addActive(
-                    footerLinks,
-                    $(footerLinks).filter(`[data-footerLink='search']`),
-                    "footer-active"
-                );
-
-                addActive(
-                    mainNavLinks,
-                    $(mainNavLinks).filter(`[data-link='search']`),
-                    "active-link"
-                );
-
-                $(headerTitle).text("Search");
-                $("title").text(`NETHUB | SEARCH`);
-
-                pushHistoryState("search", null, null, {
-                    query: q.trim(),
-                    type: "posts",
-                });
-
-                let searchQ = new URLSearchParams({
-                    query: q.trim(),
-                    type: "posts",
-                });
-                $.ajax({
-                    url: `/query_search?${searchQ}`,
-                    type: "GET",
-                    contentType: "application/json; charset=utf-8",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest",
-                    },
-                }).done((data) => {
-                    $(form).css({
-                        "background-color": "rgb(68, 67, 67)",
-                        border: "none",
+                if (q.length > 0) {
+                    routeToSearchPage(q);
+                    let searchQ = new URLSearchParams({
+                        query: q.trim(),
+                        type: "posts",
+                        submitted: true,
                     });
-                    $(searchIcon).css("fill", "whitesmoke");
-                    $(cancelSearch).hide();
-                    $(searchPopup).hide();
-                    $(searchViewTopUsers).addClass("hide-topUsers-view");
-                    $(searchViewBody).find(".search-view-result").show();
-                    $(searchViewBody).find(".search-view-result-header").show();
-                    currentSearchQuery = q;
-                    renderResultPage(data, "posts");
-                });
+                    $.ajax({
+                        url: `/query_search?${searchQ}`,
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                    }).done((data) => {
+                        $(form).css({
+                            "background-color": "rgb(68, 67, 67)",
+                            border: "none",
+                        });
+                        $(searchIcon).css("fill", "whitesmoke");
+                        $(cancelSearch).hide();
+                        $(searchPopup).hide();
+                        $(searchViewTopUsers).addClass("hide-topUsers-view");
+                        $(searchViewBody).find(".search-view-result").show();
+                        $(searchViewBody)
+                            .find(".search-view-result-header")
+                            .show();
+                        currentSearchQuery = q;
+                        renderResultPage(data, "posts");
+                    });
+                }
             });
 
             // Listen for the event where the search input field is focused into
@@ -2417,6 +2435,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     border: " 1px solid #f1ec40",
                 });
                 $(searchIcon).css("fill", "#f1ec40");
+
+                fetchRecentSearch(elementAccessories);
 
                 $(searchPopup).show();
                 if ($(searchField).val().length > 0)
@@ -2879,6 +2899,132 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
                     $(postCont).find(".post-message").html(replacedText);
                 });
+        }
+
+        // Function to fetch recent searches
+
+        function fetchRecentSearch(accessories) {
+            const {
+                searchPlaceholder,
+                searchIcon,
+                cancelSearch,
+                searchPopup,
+                searchViewTopUsers,
+                searchViewBody,
+                form,
+            } = accessories;
+            $.ajax({
+                url: "/recent_search",
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            }).done((data) => {
+                if (data.recentSearch.length === 0) {
+                    return $(searchPlaceholder).html(
+                        "Try searching for people or keywords"
+                    );
+                } else {
+                    let recentSearchHeaders = `<div class='recent-search-header'>
+                        <span>Recent</span>
+                        <span class= 'recent-clear-all'>clear all</span>
+                    </div>`;
+
+                    let recentSearchTemplate =
+                        "<div class = 'recent-search-body'>";
+                    $.each(data.recentSearch, function (index, data) {
+                        let recent = `
+                            <div class='recent-query'>${data}</div>
+                        `;
+                        recentSearchTemplate += recent;
+                    });
+                    recentSearchTemplate += "</div>";
+                    $(searchPlaceholder).html(
+                        recentSearchHeaders + recentSearchTemplate
+                    );
+
+                    let recentQuery =
+                        $(searchPlaceholder).find(".recent-query");
+                    let clearAll =
+                        $(searchPlaceholder).find(".recent-clear-all");
+
+                    // linking recent search to main search page
+
+                    if (recentQuery.length) {
+                        $(recentQuery).each(function (index, q) {
+                            $(q)
+                                .off("click")
+                                .on("click", function () {
+                                    routeToSearchPage($(q).text());
+                                    let searchQ = new URLSearchParams({
+                                        query: $(q).text(),
+                                        type: "posts",
+                                    });
+                                    $.ajax({
+                                        url: `/query_search?${searchQ}`,
+                                        type: "GET",
+                                        contentType:
+                                            "application/json; charset=utf-8",
+                                        headers: {
+                                            "X-Requested-With":
+                                                "XMLHttpRequest",
+                                        },
+                                    }).done((data) => {
+                                        $(form).css({
+                                            "background-color":
+                                                "rgb(68, 67, 67)",
+                                            border: "none",
+                                        });
+                                        $(searchIcon).css("fill", "whitesmoke");
+                                        $(cancelSearch).hide();
+                                        $(searchPopup).hide();
+                                        $(searchViewTopUsers).addClass(
+                                            "hide-topUsers-view"
+                                        );
+                                        $(searchViewBody)
+                                            .find(".search-view-result")
+                                            .show();
+                                        $(searchViewBody)
+                                            .find(".search-view-result-header")
+                                            .show();
+                                        currentSearchQuery = $(q).text();
+                                        renderResultPage(data, "posts");
+                                    });
+                                });
+                        });
+                    }
+
+                    // implement clear all
+                    if (clearAll.length) {
+                        $(clearAll)
+                            .off("click")
+                            .on("click", function () {
+                                console.log("clicked");
+                                clearAllRecent(accessories);
+                            });
+                    }
+                }
+            });
+        }
+
+        // function to implement clear all functionality in recent searches
+        function clearAllRecent(asset) {
+            let token = $("#csrf").val();
+
+            $.ajax({
+                url: "/recent_search",
+                type: "DELETE",
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": token,
+                },
+            }).done((data) => {
+                if (data.message) {
+                    fetchRecentSearch(asset);
+                }
+            });
         }
     });
 });

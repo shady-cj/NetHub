@@ -66,8 +66,9 @@ def index(request,page='home'):
                 queryType = request.GET.get('type')
 
                 if queryType is not None and query is not None:
-                    checkQuery = Search.objects.filter(query__iexact = query)
-                    if not checkQuery.exists():
+                    checkQuery = Search.objects.filter(query__iexact = query,search_user= request.user)
+                    
+                    if not checkQuery.exists() and len(query.strip()) > 0:
 
                         Search.objects.create(query= query, search_user = request.user)
 
@@ -79,7 +80,6 @@ def index(request,page='home'):
 
                         raise Http404
                 
-                print(queryResult)
 
             
             users_list = []
@@ -276,8 +276,9 @@ def querySearch(request):
 
         if query is not None and queryType is not None:
             if submitted:
-                checkQuery = Search.objects.filter(query__iexact = query)
-                if not checkQuery.exists():
+                checkQuery = Search.objects.filter(query__iexact = query,search_user= request.user)
+                print(len(query.strip()),query.strip())
+                if not checkQuery.exists() and len(query.strip()) > 0:
 
                     Search.objects.create(query= query, search_user = request.user)
 
@@ -297,6 +298,20 @@ def querySearch(request):
             return JsonResponse({'error':'Request must have query and query type parameter' })
 
             
+def recentSearch(request):
+
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax and request.method == 'GET':
+        search_obj = Search.objects.filter(search_user= request.user)
+        search_contents = [obj.query for obj in search_obj]
+        return JsonResponse({'recentSearch':search_contents})
+    
+    if is_ajax and request.method == 'DELETE':
+        Search.objects.filter(search_user =request.user).delete()
+
+        if not Search.objects.filter(search_user =request.user).exists():
+            return JsonResponse({'message':'Deleted succesfully'})
+
 
 @login_required
 def getUserInfo(request):
