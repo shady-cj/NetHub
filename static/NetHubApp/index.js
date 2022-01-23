@@ -1,4 +1,8 @@
 $.getScript("/static/NetHubApp/authFormFunc.js", function () {
+    // $(window).on("load", function () {
+    //     $("#loadSpinnerMain").hide();
+    // });
+
     $(function () {
         var hamIcon = $(".navigator-menu");
         var subMain = $(".submain-1");
@@ -399,6 +403,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         var followView = $("#following-info-container");
         var searchView = $("#main-search-view");
         var headerTitle = $(".header-title");
+        var discussionView = $(".discussion-wrapper");
         var userOnlineId = $(".submain-1-username").attr("data-userId");
         var homePageOnload = true;
         var homeClicked = 0;
@@ -412,7 +417,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         if (activeUrl.trim() === "Discussion") {
             let discussionId = $("#discussionSpan").attr("data-discussionId");
+
             $(headerTitle).text("Home");
+            showActiveView(discussionView);
             discussionAjax(discussionId);
         }
         if (
@@ -437,6 +444,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     .find("span")
                     .click(function () {
                         setIndicator(eachHeader);
+                        $("#loadSpinnerFollower").css("display", "flex");
+                        $(".actual-follow-con").hide();
                         var activeSpanTitle = $(this).text().trim();
                         var activeSpanText = activeSpanTitle.toLowerCase();
                         $(mainNavLinks).each(function (ind, val) {
@@ -567,6 +576,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         });
 
         function viewsHandler(page, historyTitle, clickedLink) {
+            $("#loadSpinnerSubmain").css("display", "flex");
+
             var emptyMessage;
             let pages_for_footer = [
                 "home",
@@ -601,6 +612,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     if (homeClicked > 0) {
                         reloadHome = true;
                     } else {
+                        $("#loadSpinnerSubmain").hide();
+
                         homeClicked++;
                     }
                 }
@@ -614,6 +627,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 emptyMessage = `<h1 class='empty-post'>No Bookmarks</h1>`;
                 showActiveView(altView);
             } else if (page === "followers" || page === "following") {
+                $("#loadSpinnerSubmain").hide();
+                $("#loadSpinnerFollower").css("display", "flex");
+                $(".actual-follow-con").hide();
                 if (isMainUser) {
                     emptyMessage =
                         page === "followers"
@@ -713,7 +729,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     $("#submain-1-userpic").attr("src", data.user.pic);
                     updatedUserProfile = true;
                 }
-                if (page === "following" || page === "followers")
+                if (page === "following" || page === "followers") {
                     loadViews(
                         data.follow,
                         emptyMessage,
@@ -722,6 +738,10 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         data.authUser,
                         data.user
                     );
+                    $("#loadSpinnerFollower").hide();
+                    $(".actual-follow-con").show();
+                }
+
                 loadViews(
                     data.posts,
                     emptyMessage,
@@ -749,7 +769,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 homeClicked = 0;
                 reloadHome = false;
                 homePageOnload = false;
-                $(profileView).html("");
+                $(profileView).empty();
                 renderProfilePage(
                     dataset,
                     user,
@@ -768,6 +788,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     formatPost(dataset, empty, true, false, authUser, user);
                 }
             }
+            $("#loadSpinnerSubmain").hide();
         }
 
         function formatPost(
@@ -2006,10 +2027,19 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         var commentContainer = $(".comment-posted-container");
 
         function displayDiscussion(elems) {
+            let query, queryType;
             $(elems).each(function (index, eachEl) {
                 $(eachEl)
                     .off("click")
                     .on("click", function (e) {
+                        $("#loadSpinnerSubmain").css("display", "flex");
+
+                        query = new URLSearchParams(location.search).get(
+                            "query"
+                        );
+                        queryType = new URLSearchParams(location.search).get(
+                            "type"
+                        );
                         if (targetUser && $("#submain-1-userpic").attr("src")) {
                             let targ = $(e.target).closest(".post-container");
 
@@ -2032,12 +2062,22 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     $(".reply-accessories").css("paddingRight", "0px");
                     $(".reply-editable div[contenteditable=true]").html("");
                     $("#reply-editable-input").val("");
-                    if ($("header .header-title").text().trim() === "Profile") {
+                    if ($(headerTitle).text().trim() === "Profile") {
                         showActiveView(profileView);
                         pushHistoryState("profile", null);
                         $("title").text(`NETHUB | PROFILE`);
+                    } else if ($(headerTitle).text().trim() === "Search") {
+                        if (queryType && query) {
+                            $("header").hide();
+                            showActiveView(searchView);
+                            pushHistoryState("search", null, null, {
+                                query: query.trim(),
+                                type: queryType.trim(),
+                            });
+                            $("title").text(`NETHUB | SEARCH`);
+                        }
                     } else {
-                        let title = $("header .header-title").text().trim();
+                        let title = $(headerTitle).text().trim();
                         $("title").text(`NETHUB | ${title.toUpperCase()}`);
                         if (title === "Following Posts") {
                             title = title.replace(" ", "_");
@@ -2066,7 +2106,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             );
         }
         function discussionAjax(postId, partialUpdate = false) {
-            $("header").hide();
+            if (!partialUpdate) {
+                $("header").hide();
+            }
             $(commentContainer).empty();
             let token = $("#csrf").val();
             // sendCommentToBackend(postId, postCon, (fromDiscussion = false));
@@ -2109,6 +2151,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     } else {
                         commentContainerUpdate(data.postInfo);
                     }
+                    $("#loadSpinnerSubmain").hide();
                 }
             });
         }
@@ -2378,6 +2421,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             let searchQueryString = $(suggestionBoxContainer).find(
                 ".search-query-string"
             );
+            let spinner = suggestionBoxContainer.find(
+                ".loadSpinnerSearchResult"
+            );
 
             let elementAccessories = {
                 searchPlaceholder,
@@ -2392,9 +2438,21 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
             // Handle when the form is submitted
 
             $(form).on("submit", function (e) {
+                // $("#loadSpinnerSubmain").css("display", "flex");
+
                 let q = $(searchField).val().trim();
+
                 e.preventDefault();
                 if (q.length > 0) {
+                    if ($("#loadSpinnerSearchPage").length === 0) {
+                        $("#loadSpinnerTopUsers").css("display", "flex");
+                    }
+                    $("#loadSpinnerSearchPage").css("display", "flex");
+                    $(searchViewBody).find(".search-view-result").hide();
+                    $(searchPopup).hide();
+                    $(searchViewTopUsers).addClass("hide-topUsers-view");
+                    $(searchIcon).css("fill", "whitesmoke");
+                    $(searchViewBody).find(".search-view-result-header").show();
                     routeToSearchPage(q);
                     let searchQ = new URLSearchParams({
                         query: q.trim(),
@@ -2413,16 +2471,14 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             "background-color": "rgb(68, 67, 67)",
                             border: "none",
                         });
-                        $(searchIcon).css("fill", "whitesmoke");
                         $(cancelSearch).hide();
-                        $(searchPopup).hide();
-                        $(searchViewTopUsers).addClass("hide-topUsers-view");
-                        $(searchViewBody).find(".search-view-result").show();
-                        $(searchViewBody)
-                            .find(".search-view-result-header")
-                            .show();
                         currentSearchQuery = q;
                         renderResultPage(data, "posts");
+                        $("#loadSpinnerSearchPage").hide();
+                        $(searchField).blur();
+                        $("#main-search-input").val(currentSearchQuery);
+                        $(searchViewBody).find(".search-view-result").show();
+                        $("#loadSpinnerTopUsers").hide();
                     });
                 }
             });
@@ -2456,6 +2512,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         if (!$(e.target).closest(".search-form").length) {
                             $(searchPopup).hide();
                             $(cancelSearch).hide();
+                            $(spinner).hide();
+                            $(suggestionUsersBoxContainer).show();
                         }
                     });
             });
@@ -2469,7 +2527,13 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     $(suggestionUsersBoxContainer).empty();
                 });
 
-            $(searchField).val("");
+            if ($(searchField).attr("id") !== "main-search-input") {
+                $(searchField).val("");
+            } else {
+                $(searchField).val(
+                    new URLSearchParams(location.search).get("query")
+                );
+            }
 
             // Listen for the event where the search input is being typed into
 
@@ -2480,6 +2544,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     $(cancelSearch).css("display", "flex");
                     $(searchPlaceholder).hide();
                     $(suggestionBoxContainer).show();
+                    $(spinner).css("display", "flex");
+                    $(suggestionUsersBoxContainer).hide();
                     $(searchQueryString).text(`"${q}"`);
                     searchQ = new URLSearchParams({
                         query: q.trim(),
@@ -2493,6 +2559,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             "X-Requested-With": "XMLHttpRequest",
                         },
                     }).done((data) => {
+                        $(spinner).hide();
+                        $(suggestionUsersBoxContainer).show();
                         if (data["num_match"] > 0) {
                             $(suggestionUsersBoxContainer).html(
                                 suggestedUsersTemplate(data.result, searchPopup)
@@ -2698,6 +2766,9 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 query: search_query,
                 type: queryType,
             });
+
+            $("#loadSpinnerSearchPage").css("display", "flex");
+            $(".search-view-result").hide();
             $.ajax({
                 url: `/query_search?${searchQ}`,
                 type: "GET",
@@ -2707,6 +2778,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 },
             }).done((data) => {
                 renderResultPage(data, queryType);
+                $("#loadSpinnerSearchPage").hide();
+                $(".search-view-result").show();
             });
         }
 
@@ -2726,6 +2799,67 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 searchResultHeader = loadSearchResultHeader(queryType);
 
                 $(searchViewBody).append(searchResultHeader);
+                $(searchViewBody).append(
+                    `<div id="loadSpinnerSearchPage">
+                            <svg
+                                version="1.1"
+                                id="L7"
+                                xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                x="0px"
+                                y="0px"
+                                viewBox="0 0 100 100"
+                                enable-background="new 0 0 100 100"
+                                xml:space="preserve"
+                            >
+                                <path
+                                    fill="#f1ec40"
+                                    d="M31.6,3.5C5.9,13.6-6.6,42.7,3.5,68.4c10.1,25.7,39.2,38.3,64.9,28.1l-3.1-7.9c-21.3,8.4-45.4-2-53.8-23.3
+c-8.4-21.3,2-45.4,23.3-53.8L31.6,3.5z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.5s"
+                                        from="0 50 50"
+                                        to="360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                                <path
+                                    fill="#f1ec40"
+                                    d="M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7
+c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.25s"
+                                        from="0 50 50"
+                                        to="-360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                                <path
+                                    fill="#fff"
+                                    d="M82,35.7C74.1,18,53.4,10.1,35.7,18S10.1,46.6,18,64.3l7.6-3.4c-6-13.5,0-29.3,13.5-35.3s29.3,0,35.3,13.5
+L82,35.7z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.5s"
+                                        from="0 50 50"
+                                        to="360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                            </svg>
+                        </div>`
+                );
                 $(searchViewBody).append(
                     "<div class='search-view-result'></div>"
                 );
@@ -2956,6 +3090,30 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             $(q)
                                 .off("click")
                                 .on("click", function () {
+                                    if (
+                                        $("#loadSpinnerSearchPage").length === 0
+                                    ) {
+                                        $("#loadSpinnerTopUsers").css(
+                                            "display",
+                                            "flex"
+                                        );
+                                    }
+                                    $("#loadSpinnerSearchPage").css(
+                                        "display",
+                                        "flex"
+                                    );
+                                    $(searchPopup).hide();
+                                    $(searchViewTopUsers).addClass(
+                                        "hide-topUsers-view"
+                                    );
+                                    $(searchViewBody)
+                                        .find(".search-view-result")
+                                        .hide();
+                                    $(searchViewBody)
+                                        .find(".search-view-result-header")
+                                        .show();
+                                    $(searchIcon).css("fill", "whitesmoke");
+
                                     routeToSearchPage($(q).text());
                                     let searchQ = new URLSearchParams({
                                         query: $(q).text(),
@@ -2976,20 +3134,19 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                                                 "rgb(68, 67, 67)",
                                             border: "none",
                                         });
-                                        $(searchIcon).css("fill", "whitesmoke");
                                         $(cancelSearch).hide();
-                                        $(searchPopup).hide();
-                                        $(searchViewTopUsers).addClass(
-                                            "hide-topUsers-view"
+
+                                        $("#main-search-input").val(
+                                            $(q).text()
                                         );
+
+                                        currentSearchQuery = $(q).text();
+                                        renderResultPage(data, "posts");
+                                        $("#loadSpinnerSearchPage").hide();
                                         $(searchViewBody)
                                             .find(".search-view-result")
                                             .show();
-                                        $(searchViewBody)
-                                            .find(".search-view-result-header")
-                                            .show();
-                                        currentSearchQuery = $(q).text();
-                                        renderResultPage(data, "posts");
+                                        $("#loadSpinnerTopUsers").hide();
                                     });
                                 });
                         });

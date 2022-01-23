@@ -9,7 +9,69 @@
 {% block header %}  <h3 class='header-title'> {{ page|title }}</h3>{% endblock %}
 
 {% block body %}
-    <div class="post-overlay {% if follow is not None or is_profile or custom_posts is not None %}hide-main-home{% endif %}" id="main-home-post-container">
+
+
+
+    <div id= 'loadSpinnerSubmain'>
+        <svg
+                version="1.1"
+                id="L7"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                x="0px"
+                y="0px"
+                viewBox="0 0 100 100"
+                enable-background="new 0 0 100 100"
+                xml:space="preserve"
+            >
+                <path
+                    fill="#f1ec40"
+                    d="M31.6,3.5C5.9,13.6-6.6,42.7,3.5,68.4c10.1,25.7,39.2,38.3,64.9,28.1l-3.1-7.9c-21.3,8.4-45.4-2-53.8-23.3
+  c-8.4-21.3,2-45.4,23.3-53.8L31.6,3.5z"
+                >
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="rotate"
+                        dur="0.5s"
+                        from="0 50 50"
+                        to="360 50 50"
+                        repeatCount="indefinite"
+                    />
+                </path>
+                <path
+                    fill="#f1ec40"
+                    d="M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7
+  c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z"
+                >
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="rotate"
+                        dur="0.25s"
+                        from="0 50 50"
+                        to="-360 50 50"
+                        repeatCount="indefinite"
+                    />
+                </path>
+                <path
+                    fill="#fff"
+                    d="M82,35.7C74.1,18,53.4,10.1,35.7,18S10.1,46.6,18,64.3l7.6-3.4c-6-13.5,0-29.3,13.5-35.3s29.3,0,35.3,13.5
+  L82,35.7z"
+                >
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="rotate"
+                        dur="0.5s"
+                        from="0 50 50"
+                        to="360 50 50"
+                        repeatCount="indefinite"
+                    />
+                </path>
+            </svg>
+    </div>
+    <div class="post-overlay {% if search or discussionPage %}hide-post-overlay{% endif %} {% if follow is not None or is_profile or custom_posts is not None %}hide-main-home{% endif %}" id="main-home-post-container">
 
 
         {% if user.is_authenticated %}
@@ -21,7 +83,6 @@
                     <input type ='text' class='hidden-post' name='post_content' hidden>
                     <input type="submit" class='new-post-btn btn-inactive' value="Post" disabled>
                 </form>
-                
             </div>
         {% endif %}
 
@@ -88,7 +149,7 @@
         {% endfor %}
     </div>
  
-    <div class="post-overlay {% if custom_posts is None %}hide-alt-post {% endif %}" id= 'alternative-post-container'> 
+    <div class="post-overlay  {% if search or discussionPage %}hide-post-overlay{% endif %} {% if custom_posts is None %}hide-alt-post {% endif %}" id= 'alternative-post-container'> 
 
         {% for post in custom_posts %}
             <div class='post-container viewProfilerContainer' data-postId="{{post.id}}">
@@ -155,12 +216,72 @@
         {% endfor %}
 
     </div>
-    <div class='post-overlay' id='following-info-container'>
+    <div class="post-overlay" id="following-info-container">
         <section class='follow-ind-con'>
             <div class='follow-ind'><span>Following</span></div>
             <div class='follow-ind'><span>Followers</span></div>
             <div class='follow-active-ind'></div>
         </section>
+        
+        <div id= 'loadSpinnerFollower'>
+            <svg
+                    version="1.1"
+                    id="L7"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    x="0px"
+                    y="0px"
+                    viewBox="0 0 100 100"
+                    enable-background="new 0 0 100 100"
+                    xml:space="preserve"
+                >
+                    <path
+                        fill="#f1ec40"
+                        d="M31.6,3.5C5.9,13.6-6.6,42.7,3.5,68.4c10.1,25.7,39.2,38.3,64.9,28.1l-3.1-7.9c-21.3,8.4-45.4-2-53.8-23.3
+    c-8.4-21.3,2-45.4,23.3-53.8L31.6,3.5z"
+                    >
+                        <animateTransform
+                            attributeName="transform"
+                            attributeType="XML"
+                            type="rotate"
+                            dur="0.5s"
+                            from="0 50 50"
+                            to="360 50 50"
+                            repeatCount="indefinite"
+                        />
+                    </path>
+                    <path
+                        fill="#f1ec40"
+                        d="M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7
+    c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z"
+                    >
+                        <animateTransform
+                            attributeName="transform"
+                            attributeType="XML"
+                            type="rotate"
+                            dur="0.25s"
+                            from="0 50 50"
+                            to="-360 50 50"
+                            repeatCount="indefinite"
+                        />
+                    </path>
+                    <path
+                        fill="#fff"
+                        d="M82,35.7C74.1,18,53.4,10.1,35.7,18S10.1,46.6,18,64.3l7.6-3.4c-6-13.5,0-29.3,13.5-35.3s29.3,0,35.3,13.5
+    L82,35.7z"
+                    >
+                        <animateTransform
+                            attributeName="transform"
+                            attributeType="XML"
+                            type="rotate"
+                            dur="0.5s"
+                            from="0 50 50"
+                            to="360 50 50"
+                            repeatCount="indefinite"
+                        />
+                    </path>
+                </svg>
+        </div>
         <section class='actual-follow-con'>
         {% if page == 'FOLLOWERS' %}
             {% for eachfollow in follow %}
@@ -210,7 +331,7 @@
 
 
     
-    <div class="post-overlay {% if not is_profile %}hide-profile{% endif %}" id='main-profile-section'>
+    <div class="post-overlay {% if search or discussionPage %}hide-post-overlay{% endif %}  {% if not is_profile %}hide-profile{% endif %}" id='main-profile-section'>
         <section class='profile-main-info'>
             <div class='profile-pic-con'>
                 <img src="{{profile_user.profile_picture.url}}" alt="">
@@ -406,6 +527,7 @@
                                 class="search-input"
                                 type="text"
                                 placeholder="Search NetHub"
+                                id = "main-search-input"
                             />
                             <div class="cancel-search-inp">
                                 <svg
@@ -430,13 +552,73 @@
                                     Search Result for
                                     <span class="search-query-string"></span>
                                 </div>
+
+                               <div class="loadSpinnerSearchResult">
+                                    <svg
+                                        version="1.1"
+                                        id="L7"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                                        x="0px"
+                                        y="0px"
+                                        viewBox="0 0 100 100"
+                                        enable-background="new 0 0 100 100"
+                                        xml:space="preserve"
+                                    >
+                                        <path
+                                            fill="#f1ec40"
+                                            d="M31.6,3.5C5.9,13.6-6.6,42.7,3.5,68.4c10.1,25.7,39.2,38.3,64.9,28.1l-3.1-7.9c-21.3,8.4-45.4-2-53.8-23.3
+  c-8.4-21.3,2-45.4,23.3-53.8L31.6,3.5z"
+                                        >
+                                            <animateTransform
+                                                attributeName="transform"
+                                                attributeType="XML"
+                                                type="rotate"
+                                                dur="0.5s"
+                                                from="0 50 50"
+                                                to="360 50 50"
+                                                repeatCount="indefinite"
+                                            />
+                                        </path>
+                                        <path
+                                            fill="#f1ec40"
+                                            d="M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7
+  c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z"
+                                        >
+                                            <animateTransform
+                                                attributeName="transform"
+                                                attributeType="XML"
+                                                type="rotate"
+                                                dur="0.25s"
+                                                from="0 50 50"
+                                                to="-360 50 50"
+                                                repeatCount="indefinite"
+                                            />
+                                        </path>
+                                        <path
+                                            fill="#fff"
+                                            d="M82,35.7C74.1,18,53.4,10.1,35.7,18S10.1,46.6,18,64.3l7.6-3.4c-6-13.5,0-29.3,13.5-35.3s29.3,0,35.3,13.5
+  L82,35.7z"
+                                        >
+                                            <animateTransform
+                                                attributeName="transform"
+                                                attributeType="XML"
+                                                type="rotate"
+                                                dur="0.5s"
+                                                from="0 50 50"
+                                                to="360 50 50"
+                                                repeatCount="indefinite"
+                                            />
+                                        </path>
+                                    </svg>
+                                </div>
                                 <div
                                     class="suggestion-users-box-container"
                                 ></div>
                             </section>
                         </div>
                     </div>
-                </div>
+                </div> 
                 <div class="search-view-body">
                    
                     <div class="search-view-topUsers  {% if queryResult is not None %}hide-topUsers-view{% endif %} ">
@@ -471,6 +653,68 @@
                             {% endfor %}
                         </div>
                     </div>
+                    {% if queryResult is None %}
+                        <div id="loadSpinnerTopUsers">
+                            <svg
+                                version="1.1"
+                                id="L7"
+                                xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                x="0px"
+                                y="0px"
+                                viewBox="0 0 100 100"
+                                enable-background="new 0 0 100 100"
+                                xml:space="preserve"
+                            >
+                                <path
+                                    fill="#f1ec40"
+                                    d="M31.6,3.5C5.9,13.6-6.6,42.7,3.5,68.4c10.1,25.7,39.2,38.3,64.9,28.1l-3.1-7.9c-21.3,8.4-45.4-2-53.8-23.3
+c-8.4-21.3,2-45.4,23.3-53.8L31.6,3.5z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.5s"
+                                        from="0 50 50"
+                                        to="360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                                <path
+                                    fill="#f1ec40"
+                                    d="M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7
+c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.25s"
+                                        from="0 50 50"
+                                        to="-360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                                <path
+                                    fill="#fff"
+                                    d="M82,35.7C74.1,18,53.4,10.1,35.7,18S10.1,46.6,18,64.3l7.6-3.4c-6-13.5,0-29.3,13.5-35.3s29.3,0,35.3,13.5
+L82,35.7z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.5s"
+                                        from="0 50 50"
+                                        to="360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                            </svg>
+                        </div>
+                    {% endif %}
+
                     {% if queryResult is not None %}
                         <div class="search-view-result-header">
                             <div class="search-view-result-posts {% if queryType == 'posts' %} search-view-result-active {% endif %}">
@@ -480,7 +724,66 @@
                                 <span>USERS</span> 
                             </div> 
                         </div>
-                        <div class= "search-view-result">
+                        <div id="loadSpinnerSearchPage">
+                            <svg
+                                version="1.1"
+                                id="L7"
+                                xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                x="0px"
+                                y="0px"
+                                viewBox="0 0 100 100"
+                                enable-background="new 0 0 100 100"
+                                xml:space="preserve"
+                            >
+                                <path
+                                    fill="#f1ec40"
+                                    d="M31.6,3.5C5.9,13.6-6.6,42.7,3.5,68.4c10.1,25.7,39.2,38.3,64.9,28.1l-3.1-7.9c-21.3,8.4-45.4-2-53.8-23.3
+c-8.4-21.3,2-45.4,23.3-53.8L31.6,3.5z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.5s"
+                                        from="0 50 50"
+                                        to="360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                                <path
+                                    fill="#f1ec40"
+                                    d="M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7
+c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.25s"
+                                        from="0 50 50"
+                                        to="-360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                                <path
+                                    fill="#fff"
+                                    d="M82,35.7C74.1,18,53.4,10.1,35.7,18S10.1,46.6,18,64.3l7.6-3.4c-6-13.5,0-29.3,13.5-35.3s29.3,0,35.3,13.5
+L82,35.7z"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        attributeType="XML"
+                                        type="rotate"
+                                        dur="0.5s"
+                                        from="0 50 50"
+                                        to="360 50 50"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="search-view-result">
                             {% if queryType == "posts" %}
                                 {% for post in queryResult %}
                                     <div class='post-container viewProfilerContainer' data-postId="{{post.id}}">

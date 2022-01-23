@@ -40,6 +40,9 @@ def index(request,page='home'):
             discussion = None
             queryResult = None
             queryType = None
+            search= False
+ 
+            discussionPage = False
             
             if page == 'following_posts':
             
@@ -56,12 +59,14 @@ def index(request,page='home'):
                 custom_posts = [b.post for b in Bookmark.objects.filter(user = request.user).order_by('-id')]
 
             elif page == 'discussion':
+                discussionPage = True
                 discussion = {
                     'user':request.session['currentUser'],
                     'post':request.session['postId'] 
                 }
             
             elif page == 'search':
+                search= True
                 query = request.GET.get('query')
                 queryType = request.GET.get('type')
 
@@ -95,9 +100,12 @@ def index(request,page='home'):
                 "page":page_name,
                 "follow":None,
                 "discussion":discussion,
+                "discussionPage":discussionPage,
                 "users_lists":top_users_list,
                 "queryResult":queryResult,
-                "queryType":queryType
+                "queryType":queryType,
+                "search":search,
+              
 
             })
             
@@ -614,7 +622,8 @@ def register(request):
         email = request.POST["email"].strip()
         first_name = request.POST["fname"].strip()
         last_name = request.POST["lname"].strip()
-
+        if first_name == '' or last_name == '':
+            return None
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
