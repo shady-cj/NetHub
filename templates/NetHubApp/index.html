@@ -94,7 +94,10 @@
                 </div>
                 <div class='post-content'>
                     <div class='post-title'>
-                        <span data-author={{post.post_creator.username}} class='post-username authorProfileName'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                        <span data-author={{post.post_creator.username}} class='post-username authorProfileName'>
+                            {{post.post_creator.username|title}}
+                        </span> 
+                        <span class='post-timestamp'>{{post.time_format}}</span>
                     </div>
                     <div data-postId="{{post.id}}" class='post-message'>
                         {{post.post_content | safe}}
@@ -788,11 +791,14 @@ L82,35.7z"
                                 {% for post in queryResult %}
                                     <div class='post-container viewProfilerContainer' data-postId="{{post.id}}">
                                         <div class='post-image'>
-                                            <img src="{{post.post_creator.profile_picture.url}} " alt="">
+                                            <img data-author={{post.post_creator.username}} src="{{post.post_creator.profile_picture.url}}" class='authorProfileImage' alt="">
                                         </div>
                                         <div class='post-content'>
                                             <div class='post-title'>
-                                                <span class='post-username'>{{post.post_creator.username|title}}</span> <span class='post-timestamp'>{{post.time_format}}</span>
+                                                <span data-author={{post.post_creator.username}} class='post-username authorProfileName'>
+                                                    {{post.post_creator.username|title}}
+                                                </span> 
+                                                <span class='post-timestamp'>{{post.time_format}}</span>
                                             </div>
                                             <div data-postId="{{post.id}}" class='post-message'>
                                                 {{post.post_content | safe}}

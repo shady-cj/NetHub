@@ -9,6 +9,19 @@
     -webkit-overflow-scrolling: touch;
 }
 
+body::-webkit-scrollbar {
+    width: 10px;
+}
+
+body::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #1e1e1f;
+    outline: 1px solid slategrey;
+}
+
 /* width
 ::-webkit-scrollbar {
   width: 20px;
@@ -96,8 +109,8 @@ body {
 .new-post-mobile-btn {
     display: inline-block;
     position: absolute;
-    bottom: 20%;
-    right: 15%;
+    bottom: 12%;
+    right: 8%;
     background-color: rgb(241, 236, 64, 0.6);
     text-decoration: none;
     height: 60px;
@@ -1509,6 +1522,7 @@ form .form-group .form-container div span {
 .search-view-container {
     padding-top: 24px !important;
     display: none;
+    overflow-y: hidden;
 }
 .search-view-submain {
     display: flex;
@@ -1585,10 +1599,11 @@ form .form-group .form-container div span {
 .search-view-body {
     margin-top: 20px;
     flex: 1;
-    padding: 3px 12px;
+    padding: 3px 0px;
 }
 .search-view-topUsers h1 {
     color: whitesmoke;
+    margin-left: 12px;
 }
 
 .submain-3-topUsers {
@@ -1604,6 +1619,8 @@ form .form-group .form-container div span {
     height: 100%;
     flex: 1;
     padding-top: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 .topUsers_list_container .top_user {
     display: flex;
@@ -1811,6 +1828,11 @@ form .form-group .form-container div span {
 }
 .search-view-result-active span {
     color: #f1ec40 !important;
+}
+.search-view-result {
+    padding-bottom: 20px;
+    height: 85vh;
+    overflow-y: scroll;
 }
 .search-result-user {
     display: flex;
@@ -2381,6 +2403,10 @@ form .form-group .form-container div span {
     .post-title span.post-timestamp {
         font-size: 12px;
     }
+    .search-view-result {
+        height: 90vh;
+        padding-bottom: 15px;
+    }
     .post-content .post-message {
         font-size: 14px;
     }
@@ -2558,5 +2584,8 @@ form .form-group .form-container div span {
     .reply-editable-container .reply-accessories button {
         padding: 8px 16px;
         border-radius: 12px;
+    }
+    .search-view-result {
+        height: 75.8vh;
     }
 }

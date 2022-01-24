@@ -435,6 +435,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
         if (activeUrl.trim() === "Search") {
             $("header").hide();
             console.log("showing Search view");
+            $(".submain-3-search").hide();
             showActiveView(searchView);
         }
 
@@ -577,6 +578,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         function viewsHandler(page, historyTitle, clickedLink) {
             $("#loadSpinnerSubmain").css("display", "flex");
+            $(".submain-3-search").show();
+            $("#main-search-input").val("");
 
             var emptyMessage;
             let pages_for_footer = [
@@ -658,6 +661,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 showActiveView(profileView);
             } else if (page === "search") {
                 $("header").hide();
+                $(".submain-3-search").hide();
+
                 showActiveView(searchView);
             } else {
                 showActiveView(altView);
@@ -2040,6 +2045,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         queryType = new URLSearchParams(location.search).get(
                             "type"
                         );
+                        $(".submain-3-search").show();
+
                         if (targetUser && $("#submain-1-userpic").attr("src")) {
                             let targ = $(e.target).closest(".post-container");
 
@@ -2069,6 +2076,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                     } else if ($(headerTitle).text().trim() === "Search") {
                         if (queryType && query) {
                             $("header").hide();
+                            $(".submain-3-search").hide();
+
                             showActiveView(searchView);
                             pushHistoryState("search", null, null, {
                                 query: query.trim(),
@@ -2374,6 +2383,7 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
 
         // route to search page
         function routeToSearchPage(q) {
+            $(".submain-3-search").hide();
             showActiveView(searchView);
             $("header").hide();
             addActive(
@@ -2919,45 +2929,9 @@ L82,35.7z"
                         // console.log(template);
                     }
                     $(searchViewWrapper).append(template);
+
+                    addEventsToSearchResults(queryType, searchViewWrapper);
                 });
-
-                // Adding events to the post containers
-                if (queryType === "posts") {
-                    editEvent($(searchViewWrapper).find(".fi-rr-pencil"));
-                    addToBookmark($(searchViewWrapper).find(".bookmark-btn"));
-                    addEventToLikeBtns(
-                        $(searchViewWrapper).find(".post-container")
-                    );
-                    addEventToCommentBtns(
-                        $(searchViewWrapper).find(".post-container")
-                    );
-                    displayDiscussion(
-                        $(searchViewWrapper).find(".post-container")
-                    );
-                    postToProfileEventHandler(
-                        $(searchViewWrapper).find(".viewProfilerContainer")
-                    );
-                    // Make the match bold...d
-                    makeMatchedTextBold($(searchViewWrapper));
-                }
-
-                // Add event to Link each user search result to profile
-                if (queryType === "users") {
-                    $(searchViewWrapper)
-                        .find(".search-result-user")
-                        .each(function (index, value) {
-                            $(value)
-                                .off("click")
-                                .on("click", function () {
-                                    let containerUsername = $(value)
-                                        .find(".search-result-user-username")
-                                        .text()
-                                        .trim()
-                                        .toLowerCase();
-                                    routeToProfilePage(containerUsername);
-                                });
-                        });
-                }
             } else {
                 let empty =
                     '<h3 class="empty-post">No Result match your search </h3>';
@@ -2978,9 +2952,56 @@ L82,35.7z"
                 });
         }
 
+        addEventsToSearchResults(
+            $(".search-view-result-active").text().trim().toLowerCase(),
+            $(".search-view-result")
+        );
+        // Add events to user and post container
+        function addEventsToSearchResults(queryType, searchViewWrapper) {
+            // Adding events to the post containers
+            if (queryType === "posts") {
+                editEvent($(searchViewWrapper).find(".fi-rr-pencil"));
+                addToBookmark($(searchViewWrapper).find(".bookmark-btn"));
+                addEventToLikeBtns(
+                    $(searchViewWrapper).find(".post-container")
+                );
+                addEventToCommentBtns(
+                    $(searchViewWrapper).find(".post-container")
+                );
+
+                postToProfileEventHandler(
+                    $(searchViewWrapper).find(".viewProfilerContainer")
+                );
+
+                displayDiscussion($(searchViewWrapper).find(".post-container"));
+
+                // Make the match bold...d
+                makeMatchedTextBold($(searchViewWrapper));
+            }
+
+            // Add event to Link each user search result to profile
+            if (queryType === "users") {
+                $(searchViewWrapper)
+                    .find(".search-result-user")
+                    .each(function (index, value) {
+                        $(value)
+                            .off("click")
+                            .on("click", function () {
+                                let containerUsername = $(value)
+                                    .find(".search-result-user-username")
+                                    .text()
+                                    .trim()
+                                    .toLowerCase();
+                                routeToProfilePage(containerUsername);
+                            });
+                    });
+            }
+        }
+
         // Function to initiate when the svg back button is clicked
 
         function closeMainSearchPage() {
+            $("#main-search-input").val("");
             $(".search-back-navigator").addClass("hide-back-navigator");
             pushHistoryState("search", null, null);
             $(searchViewTopUsers).removeClass("hide-topUsers-view");
