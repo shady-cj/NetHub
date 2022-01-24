@@ -2037,8 +2037,6 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                 $(eachEl)
                     .off("click")
                     .on("click", function (e) {
-                        $("#loadSpinnerSubmain").css("display", "flex");
-
                         query = new URLSearchParams(location.search).get(
                             "query"
                         );
@@ -2048,6 +2046,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                         $(".submain-3-search").show();
 
                         if (targetUser && $("#submain-1-userpic").attr("src")) {
+                            $("#loadSpinnerSubmain").css("display", "flex");
+
                             let targ = $(e.target).closest(".post-container");
 
                             let postId = $(targ).attr("data-postId");
@@ -2056,6 +2056,8 @@ $.getScript("/static/NetHubApp/authFormFunc.js", function () {
                             alert(
                                 "Login or create an account to have access to full features"
                             );
+
+                            $("#loadSpinnerSubmain").hide();
                         }
                     });
             });
